@@ -8,31 +8,39 @@ namespace Task5
     {
         public static Semaphore Pool { get; set; }
 
+        public static Semaphore Semaphore { get; set; }
+
         static void Main()
         {
-            
-            Pool = new Semaphore(10, 10);
 
-            StartThreadWithState(42);
+            Pool = new Semaphore(1, 1);
+            Semaphore = new Semaphore(0, 1);
+
+            StartThreadWithState(10);
+            Semaphore.WaitOne();
         }
 
         internal static void StartThreadWithState(int number)
         {
-            ThreadPool.QueueUserWorkItem(ThreadProc, 
-                 number);
+            ThreadPool.QueueUserWorkItem(ThreadProc, number);
         }
 
         private static void ThreadProc(object state)
         {
-            var value = (int)state;
-           
-            Console.WriteLine($"value = {--value}");
-            Console.WriteLine("-------------------");
-            
             Pool.WaitOne();
-            StartThreadWithState(value);
+            var value = (int) state;
+
+            Console.WriteLine($"value = {value--}");
+            Console.WriteLine("-------------------");
+            if (value > 0)
+            {
+                StartThreadWithState(value);
+            }
+            else
+            {
+                ThreadPool.QueueUserWorkItem(x => Semaphore.Release());
+            }
+            Pool.Release();
         }
     }
-    
-
 }
