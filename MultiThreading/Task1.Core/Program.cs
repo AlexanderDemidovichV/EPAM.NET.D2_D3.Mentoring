@@ -8,40 +8,34 @@ namespace Task1.Core
 {
     class Program
     {
-        static async Task Main()
+        private const int taskAmount = 100;
+        private const int iterationAmount = 1000;
+
+        private static void Main()
         {
-            Console.WriteLine("Hello World!");
-
-            var tasks = DoWork();
-            
-            //foreach (Task task in tasks)
-            //{
-            //    task.Start();
-            //}
-            Parallel.ForEach(tasks, (t) => { t.Start(); });
-            Task.WaitAll(tasks);
-        }
-
-        public static Task[] DoWork()
-        {
-            int[] array = Enumerable.Range(0, 100).ToArray();
-            Task[] tasks = new Task[100];
-
-            array.ToList().ForEach((i) =>
+            var tasks = new List<Task>();
+            for (int i = 0; i < taskAmount; i++)            
             {
-                tasks[i] = new Task(() =>
+                var taskNumber = i;
+                tasks.Add(Task.Factory.StartNew(() =>
                 {
-                    DoSomething(i);
-                });
-            });
-            return tasks;
-        }
+                    for (int j = 1; j <= iterationAmount; j++)
+                    {
+                        Console.WriteLine($"Task #{taskNumber} - iteration #{j}");
+                    }
+                }));
+            }
 
-        static void DoSomething(int taskNumber)
-        {
-            for (int i = 0; i < 1000; i++)
+            try
             {
-                Console.WriteLine($"Task #{taskNumber} – {i}");
+                Task.WaitAll(tasks.ToArray());
+            }
+            catch (AggregateException e)
+            {
+                foreach (var innerException in e.Flatten().InnerExceptions)
+                {
+                    Console.WriteLine(innerException.ToString());
+                }
             }
         }
     }

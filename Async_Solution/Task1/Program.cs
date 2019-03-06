@@ -9,59 +9,34 @@ namespace Task1
 {
     class Program
     {
-        async static Task Catcher()
-        {
-            try { await Thrower(); }
-            catch (NullReferenceException e)
-            {  // Исключение будет обработано здесь 
-                throw;
-            } 
-        }
 
-        async static Task Thrower()
-        {
-            await Task.Delay(100); 
-            throw new NullReferenceException();
-        }
 
         static async Task Main(string[] args)
         {
-            try
+            var token = new CancellationTokenSource();
+            Console.WriteLine("first");
+            int n = Convert.ToInt32(Console.ReadLine());
+
+            var task = RunTask(token.Token, n);
+
+            Console.WriteLine("second");
+            n = Convert.ToInt32(Console.ReadLine());
+            token.Cancel();
+            if (n == 0)
             {
-                await Catcher();
+
             }
-            catch (NullReferenceException e)
+            else
             {
-                throw;
+                task.ContinueWith(async _ =>
+                {
+                    RunTask(new CancellationTokenSource().Token, n);
+                });
+                Console.WriteLine("cancel");
+                token.Cancel();
+                token = new CancellationTokenSource();
+                RunTask(token.Token, n);
             }
-            
-
-            //var token = new CancellationTokenSource();
-            //Console.WriteLine("first");
-            //int n = Convert.ToInt32(Console.ReadLine());
-
-            //var task = RunTask(token.Token, n);
-
-
-
-            //Console.WriteLine("second");
-            //n = Convert.ToInt32(Console.ReadLine());
-            //token.Cancel();
-            //if (n == 0)
-            //{
-
-            //}
-            //else
-            //{
-            //    task.ContinueWith(async _ =>
-            //    {
-            //        RunTask(new CancellationTokenSource().Token, n);
-            //    });
-            //    Console.WriteLine("cancel");
-            //    token.Cancel();
-            //    token = new CancellationTokenSource();
-            //    RunTask(token.Token, n);
-            //}
 
 
             Console.ReadKey();

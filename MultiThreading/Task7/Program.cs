@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,93 +8,99 @@ namespace Task7
 {
     class Program
     {
-        static async Task Main()
+        private static void Main()
         {
-            TaskC();
-
-
+            RunPart("A", TaskContinuationOptions.None);
+            RunPart("B", TaskContinuationOptions.OnlyOnFaulted);
+            RunPart("C", TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+            RunPart("D", TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.RunContinuationsAsynchronously);
 
             Console.ReadKey();
         }
 
-        private static void TaskA()
-        {
-            var task = new Task(() =>
-            {
-                Console.WriteLine("Init task A.");
-            });
-            
-            task.ContinueWith(x =>
-            {
-                Console.WriteLine("I don't care about result.");
-            }, TaskContinuationOptions.None
-                | TaskContinuationOptions.AttachedToParent);
 
-            try
+        private static void RunPart(string partIdentifier, TaskContinuationOptions opts, TaskScheduler scheduler = null)
+        {
+            Console.WriteLine($"Part {partIdentifier}.");
+            Console.WriteLine("No exceptions: ");
+            var initial = Task.Factory.StartNew(() =>
             {
-                task.Start();
-                task.Wait();
+                Console.WriteLine($"Task 7.{partIdentifier} (initial, normal flow, thread #{Thread.CurrentThread.ManagedThreadId})");
+            });
+            var continuation = initial.ContinueWith(task => Console.WriteLine($"Task 7.{partIdentifier} (continuation, thread #{Thread.CurrentThread.ManagedThreadId})"), opts);
+            initial.Wait();
+            if (!continuation.IsCanceled)
+            {
+                continuation.Wait();
             }
-            catch (Exception e)
+            Console.WriteLine("Exception in initial task: ");
+            initial = Task.Factory.StartNew(() =>
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"Task 7.{partIdentifier} (initial, exc thrown, thread #{Thread.CurrentThread.ManagedThreadId})");
+                throw new NullReferenceException();
+            });
+            if (scheduler != null)
+            {
+                initial.ContinueWith(
+                    task => Console.WriteLine(
+                        $"Task 7.{partIdentifier} (continuation, thread #{Thread.CurrentThread.ManagedThreadId})"),
+                    CancellationToken.None, opts, scheduler).Wait();
+            }
+            else
+            {
+                initial.ContinueWith(
+                    task => Console.WriteLine(
+                        $"Task 7.{partIdentifier} (continuation, thread #{Thread.CurrentThread.ManagedThreadId})"),
+                    opts).Wait();
+            }
+        }
+    }
+
+    public class NewThreadTaskScheduler : TaskScheduler, IDisposable
+    {
+        private readonly BlockingCollection<Task> _tasksCollection = new BlockingCollection<Task>();
+
+        public void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+            _tasksCollection.CompleteAdding();
+            _tasksCollection.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected override void QueueTask(Task task)
+        {
+            _tasksCollection.Add(task);
+            RunTasks();
+        }
+
+        private void RunTasks()
+        {
+            while (_tasksCollection.Count > 0)
+            {
+                new Thread(() =>
+                {
+                    TryExecuteTask(_tasksCollection.Take());
+                }).Start();
             }
         }
 
-        private static void TaskB()
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
-            var task = new Task(() =>
-            {
-                Console.WriteLine("Init task B.");
-                throw new Exception("Booom!!!");
-            });
-            
-            task.ContinueWith(x =>
-            {
-                Console.WriteLine("I love faulted task.");
-            }, TaskContinuationOptions.OnlyOnFaulted 
-                | TaskContinuationOptions.AttachedToParent);
-
-            try
-            {
-                task.Start();
-                task.Wait();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            return TryExecuteTask(task);
         }
 
-        private static void TaskC()
+        protected override IEnumerable<Task> GetScheduledTasks()
         {
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-            var token = new CancellationToken();
-            var task = new Task(() =>
-            {
-                Console.WriteLine("Init task C.");
-                Console.WriteLine($"Thread #{Thread.CurrentThread.ManagedThreadId}");
-                throw new Exception("Booom!!!");
-            });
-            
-
-            task.ContinueWith(x =>
-            {
-                Console.WriteLine("I love Faulted and use the same context...");
-                Console.WriteLine($"Thread #{Thread.CurrentThread.ManagedThreadId}");
-            }, token, TaskContinuationOptions.OnlyOnFaulted
-                | TaskContinuationOptions.AttachedToParent, 
-            TaskScheduler.FromCurrentSynchronizationContext());
-
-            try
-            {
-                task.RunSynchronously();
-                task.Wait(token);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            return _tasksCollection.ToArray();
         }
     }
 }

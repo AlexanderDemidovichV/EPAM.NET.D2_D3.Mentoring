@@ -7,9 +7,9 @@ namespace Task4
 {
     public class Program
     {
-        static async Task Main()
+        private static void Main()
         {
-            StartThreadWithState(42, 10, 0);
+            StartThreadWithState(42, 10, 1);
         }
 
         internal static void StartThreadWithState(
@@ -20,6 +20,8 @@ namespace Task4
             Thread t = new Thread(tws.ThreadProc);
             t.Start();
             t.Join();
+
+            Console.ReadLine();
         }
         
     }
@@ -53,6 +55,7 @@ namespace Task4
         {
             Console.WriteLine($"depth = {depth}");
             Console.WriteLine($"value = {number}");
+            Console.WriteLine($"ThreadID = {Thread.CurrentThread.ManagedThreadId}");
             Console.WriteLine("-------------------");
         }
     }

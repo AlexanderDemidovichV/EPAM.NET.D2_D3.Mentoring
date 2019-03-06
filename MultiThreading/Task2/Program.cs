@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,67 +6,71 @@ namespace Task2
 {
     class Program
     {
-        static async Task Main()
+        private const int MaxRandomValue = 10;
+        private const int MinRandomValue = 0;
+
+        private static void Main()
         {
-            var task = new Task<int[]>(() =>
+            Task.Run(() => DoTask1())
+                .ContinueWith(task => DoTask2(task.Result))
+                .ContinueWith(task => DoTask3(task.Result))
+                .ContinueWith(task => DoTask4(task.Result)).Wait();
+
+            Console.ReadLine();
+        }
+
+        private static int[] DoTask1()
+        {
+            Console.WriteLine("First task:");
+            var randNum = new Random();
+            var array = new int[10];
+
+            for (int i = 0; i < 10; i++)
             {
-                Console.WriteLine("First task:");
-                const int min = 0;
-                const int max = 20;
-                var randNum = new Random();
+                array[i] = randNum.Next(MaxRandomValue);
+            }
 
-                var array = Enumerable.Repeat(0, 9)
-                    .Select(i => randNum.Next(min, max))
-                    .ToArray();
+            PrintArrayToConsole(array);
 
-                foreach (var i in array)
-                {
-                    Console.WriteLine(i);
-                }
+            return array;
+        }
 
-                return array;
-            });
+        private static int[] DoTask2(int[] input)
+        {
+            Console.WriteLine("Second task:");
+            
+            var randNum = new Random();
+            var array = input
+                .Select(i => i * randNum.Next(MinRandomValue, MaxRandomValue))
+                .ToArray();
 
-            var result = task
-                .ContinueWith(x =>
-                {
-                    Console.WriteLine("Second task:");
+            PrintArrayToConsole(array);
 
-                    const int min = 0;
-                    const int max = 20;
-                    var randNum = new Random();
-                    var array = x.Result.Select(i => i * randNum.Next(min, max)).ToArray();
+            return array;
+        }
 
-                    foreach (var i in array)
-                    {
-                        Console.WriteLine(i);
-                    }
+        private static int[] DoTask3(int[] array)
+        {
+            Console.WriteLine("Third task:");
+            Array.Sort(array);
 
-                    return array;
-                })
-                    .ContinueWith(x =>
-                    {
-                        Console.WriteLine("Third task:");
+            PrintArrayToConsole(array);
 
-                        var array = x.Result.OrderBy(i => i).ToArray();
+            return array;
+        }
 
-                        foreach (var i in array)
-                        {
-                            Console.WriteLine(i);
-                        }
+        private static void DoTask4(int[] input)
+        {
+            Console.WriteLine("Fourth task:");
+            Console.WriteLine($"Average = {input.Average()}");
+        }
 
-                        return array;
-                    })
-                        .ContinueWith(x =>
-                        {
-                            Console.WriteLine("Fourth task:");
-                            var average = x.Result.Average();
-                            Console.WriteLine($"Average = {average}");
-                            return average;
-                        });
-
-            task.Start();
-            result.Wait();
+        private static void PrintArrayToConsole(int[] array)
+        {
+            foreach (var value in array)
+            {
+                Console.WriteLine(value);
+            }
         }
     }
 }
