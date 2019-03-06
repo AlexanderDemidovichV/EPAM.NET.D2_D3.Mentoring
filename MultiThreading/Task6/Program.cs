@@ -1,49 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Task6
 {
     class Program
     {
-        private static readonly Semaphore _semaphore1 = new Semaphore(1, 1);
-        private static readonly Semaphore _semaphore2 = new Semaphore(0, 1);
-
-        private static List<int> _items = new List<int>();
-
-        private static void Main()
+       
+        private static SynchronizedObservableCollection<int> list;
+        static void Main()
         {
-            _items = new List<int>();
-            Thread addingThread = new Thread(() =>
+            list = new SynchronizedObservableCollection<int>();
+
+            var taskListner = new Task(() =>
             {
-                for (int i = 0; i < 10; i++)
+                list.CollectionChanged += (sender, e) =>
                 {
-                    _semaphore1.WaitOne();
-                    _items.Add(i);
-                    Console.WriteLine($"Adding thread says: {i} just have been added to collection!");
-                    _semaphore2.Release();
-                }
+                    foreach (var item in e.NewItems)
+                    {
+                        Console.WriteLine($"privet {item}");
+                    }
+
+                };
+
             });
 
-            Thread notifyingThread = new Thread(() =>
+            var task = new Task(() =>
             {
-                var innerCount = 0;
-                while (innerCount < 10)
+                const int min = 0;
+                const int max = 20;
+                var randNum = new Random();
+
+                foreach (var item in Enumerable.Repeat(0, 9)
+                    .Select(i => randNum.Next(min, max)))
                 {
-                    _semaphore2.WaitOne();
-                    Console.WriteLine("Notifying thread says: ");
-                    _items.ForEach(Console.WriteLine);
-                    _semaphore1.Release();
-                    innerCount++;
+                    list.Add(item);
                 }
+
             });
-
-            addingThread.Start();
-            notifyingThread.Start();
-            notifyingThread.Join();
-
-            Console.ReadLine();
+            taskListner.Start();
+            task.Start();
+            task.Wait();
         }
+
+
     }
+    
 
 }
