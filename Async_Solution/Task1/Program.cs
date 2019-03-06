@@ -1,65 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Task1
 {
     class Program
     {
+        private static readonly string _terminateInput = "exit";
 
+        private static MathExecutor _currentExecutor;
 
-        static async Task Main(string[] args)
+        static void Main()
         {
-            var token = new CancellationTokenSource();
-            Console.WriteLine("first");
-            int n = Convert.ToInt32(Console.ReadLine());
-
-            var task = RunTask(token.Token, n);
-
-            Console.WriteLine("second");
-            n = Convert.ToInt32(Console.ReadLine());
-            token.Cancel();
-            if (n == 0)
+            string input = string.Empty;
+            Console.WriteLine("Enter the upper bound to calculate the sum from 0 to it (type exit to quit):");
+            while (!string.Equals(input, _terminateInput,
+                StringComparison.InvariantCultureIgnoreCase))
             {
-
-            }
-            else
-            {
-                task.ContinueWith(async _ =>
+                input = Console.ReadLine();
+                if (!string.Equals(input, _terminateInput,
+                    StringComparison.InvariantCultureIgnoreCase))
                 {
-                    RunTask(new CancellationTokenSource().Token, n);
-                });
-                Console.WriteLine("cancel");
-                token.Cancel();
-                token = new CancellationTokenSource();
-                RunTask(token.Token, n);
-            }
-
-
-            Console.ReadKey();
-        }
-
-        private static Task RunTask(CancellationToken token, int number)
-        {
-            var task = new Task(() =>
-            {
-                int result = 0;
-                for (int i = 0; i <= number; i++)
-                {
-                    result += i;
-                    Thread.Sleep(50);
-                    if (token.IsCancellationRequested)
+                    var parseResult = Int32.TryParse(input, out var upperBound);
+                    if (parseResult)
                     {
-                        return;
+                        if (_currentExecutor == null
+                            || _currentExecutor.IsExecutionCompleted)
+                        {
+                            _currentExecutor = new MathExecutor(upperBound,
+                                new CancellationTokenSource());
+                            _currentExecutor.Start();
+                        }
+                        else
+                        {
+                            _currentExecutor =
+                                _currentExecutor.ReQueue(new MathExecutor(upperBound,
+                                    new CancellationTokenSource()));
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unexpected input!");
                     }
                 }
-                Console.WriteLine($"Result: {result}");
-            }, token);
-            task.Start();
-            return task;
+            }
         }
     }
 }

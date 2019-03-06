@@ -14,57 +14,34 @@ namespace Task2
 {
     public partial class MainForm : Form
     {
+        private Service _service;
+        
         public MainForm()
         {
+            this._service = new Service();
             InitializeComponent();
         }
 
-        private CancellationTokenSource cancellationTokenSource1;
-        private CancellationTokenSource cancellationTokenSource2;
-
         private async void button1_Click(object sender, EventArgs e)
         {
-            var text = this.textBox1.Text;
-            var httpClient = new HttpClient();
-            try
-            {
-                cancellationTokenSource1 = new CancellationTokenSource();
-                var result = await httpClient.GetAsync(text,
-                    cancellationTokenSource1.Token);
-                MessageBox.Show($"{result}");
-            }
-            catch (Exception exception)
-            {
+            await _service.GetAsync(textBox1.Text, 1);
 
-            }
-            
+
         }
 
         private async void button2_Click(object sender, EventArgs e)
         {
-            var text = this.textBox2.Text;
-            var httpClient = new HttpClient();
-            try
-            {
-                cancellationTokenSource2 = new CancellationTokenSource();
-                var result = await httpClient.GetAsync(text,
-                    cancellationTokenSource2.Token);
-                MessageBox.Show($"{result}");
-            }
-            catch (Exception exception)
-            {
-
-            }
+            await _service.GetAsync(textBox2.Text, 2);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            cancellationTokenSource1.Cancel();
+            _service.Cancel(1);
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            cancellationTokenSource2.Cancel();
+            _service.Cancel(2);
         }
     }
 }
