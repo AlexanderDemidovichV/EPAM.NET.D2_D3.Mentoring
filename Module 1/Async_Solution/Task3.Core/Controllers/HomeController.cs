@@ -78,9 +78,7 @@ namespace Task3.Core.Controllers
         public JsonResult GetTotal()
         {
             lock (_syncObjects[GetSyncKeyForItem(ItemType.Burger)])
-            {
                 lock (_syncObjects[GetSyncKeyForItem(ItemType.Pasta)])
-                {
                     lock (_syncObjects[GetSyncKeyForItem(ItemType.Pizza)])
                     {
                         var total = (Session.GetInt32(ItemType.Burger.ToString()) ?? 0) +
@@ -88,8 +86,6 @@ namespace Task3.Core.Controllers
                                     (Session.GetInt32(ItemType.Pasta.ToString()) ?? 0);
                         return Json(total);
                     }
-                }
-            }
         }
 
         private string GetSyncKeyForItem(ItemType item)
