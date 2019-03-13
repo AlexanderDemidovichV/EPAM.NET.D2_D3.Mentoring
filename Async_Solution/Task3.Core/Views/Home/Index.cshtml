@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="jumbotron">
+    <h1>Food store</h1>
+    <p class="lead">Hungry? Buy some food here.</p>
+    <input type="button" class="btn btn-default total" value="0" />
+        
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <h2>Pizza:</h2>
+        <p>
+            Tasty pizza.
+        </p>
+        @using (Html.BeginForm("Buy", "Home", FormMethod.Post, new { @class = "order-form" }))
+        {
+            <input type="submit" class="btn btn-default" value="Order" />
+            <input type="hidden" name="item" value="1" />
+            <input type="hidden" value="0" />
+            <div class="order-block">
+                <input type="button" class="btn btn-default btn-decrease" value="-" data-url="@Url.Action("Decrease")" data-item="1" />
+                <input type="text" class="form-control qty" value="0" disabled="disabled" />
+                <input type="button" class="btn btn-default btn-increase" value="+" data-url="@Url.Action("Increase")" data-item="1" />
+            </div>
+        }
+    </div>
+    <div class="col-md-4">
+        <h2>Burger</h2>
+        <p>Giant burger.</p>
+        @using (Html.BeginForm("Buy", "Home", FormMethod.Post, new { @class = "order-form" }))
+        {
+            <input type="submit" class="btn btn-default" value="Order" />
+            <input type="hidden" name="item" value="2" />
+            <input type="hidden" value="0" />
+            <div class="order-block">
+                <input type="button" class="btn btn-default btn-decrease" value="-" data-url="@Url.Action("Decrease")" data-item="2" />
+                <input type="text" class="form-control qty" value="0" disabled="disabled" />
+                <input type="button" class="btn btn-default btn-increase" value="+" data-url="@Url.Action("Increase")" data-item="2" />
+            </div>
+        }
+    </div>
+    <div class="col-md-4">
+        <h2>Pasta</h2>
+        <p>The best choice!</p>
+        @using (Html.BeginForm("Buy", "Home", FormMethod.Post, new { @class = "order-form" }))
+        {
+            <input type="submit" class="btn btn-default" value="Order" />
+            <input type="hidden" name="item" value="3" />
+            <input type="hidden" value="0" />
+            <div class="order-block">
+                <input type="button" class="btn btn-default btn-decrease" value="-" data-url="@Url.Action("Decrease")" data-item="3" />
+                <input type="text" class="form-control qty" value="0" disabled="disabled"/>
+                <input type="button" class="btn btn-default btn-increase" value="+" data-url="@Url.Action("Increase")" data-item="3" />
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(function() {
+            $(".qty").filter(function(index, element) {
+                if ($(element).val() == 0) {
+                    $(element).closest(".order-block").hide();
+                } else {
+                    $(element).closest("form").find("input[type='submit']").hide();
+                }
+            });
+        });
+        $(".order-form").submit(function(event) {
+            event.preventDefault();
+            var formData = $(event.target).serialize();
+            formData["qty"] =
+                $.ajax({
+                    type: "POST",
+                    url: $(event.target).attr("action"),
+                    data: $(event.target).serialize(),
+                    success: function(data) {
+                        $(event.target).find(".order-block").show();
+                        $(event.target).find(".qty").val(data);
+                        $(event.target).find("input[type='submit']").hide();
+                        updateTotal();
+                    }
+                });
+        });
+        $(".btn-increase, .btn-decrease").click(function(event) {
+            $.ajax({
+                type: "POST",
+                url: $(event.target).data("url"),
+                data: { item: $(event.target).data("item") },
+                success: function(data) {
+                    $(event.target).siblings(".qty").val(data);
+                    if (data == 0) {
+                        $(event.target).closest(".order-block").hide();
+                        $(event.target).closest("form").find("input[type='submit']").show();
+                    }
+                    updateTotal();
+                }
+            });
+        });
+
+        function updateTotal() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("GetTotal")",
+                success: function (data) {
+                    $(".total").val(data);
+                }
+            });
+        }
+        //# sourceURL=vvvv.js
+    </script>
+}
+
