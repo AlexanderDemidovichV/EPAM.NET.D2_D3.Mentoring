@@ -60,38 +60,9 @@ namespace Mapper
             return this;
         }
     }
-    public class Mapper2<TSource, TDestination>
-    {
-        private Dictionary<Expression<Func<TSource, object>>, Expression<Func<TDestination, object>>> mappings =
-            new Dictionary<Expression<Func<TSource, object>>, Expression<Func<TDestination, object>>>();
-
-        Func<TSource, TDestination> mapFunction;
-        internal Mapper2(Func<TSource, TDestination> func)
-        {
-            mapFunction = func;
-        }
-        public TDestination Map(TSource source)
-        {
-            var destination = mapFunction(source);
-            foreach (var srcMap in mappings.Keys)
-            {
-                object srcValue = (srcMap.Compile())(source);
-                var destPropertyName = (mappings[srcMap].Body as MemberExpression).Member.Name;
-                PropertyInfo destPropInfo = destination.GetType().GetProperty(destPropertyName);
-                destPropInfo.SetValue(destination, srcValue);
-            }
-            return destination;
-        }
-
-        public void AddMapping(Expression<Func<TSource, object>> source, Expression<Func<TDestination, object>> destination)
-        {
-            mappings.Add(source, destination);
-        }
-    }
-
     public class MappingGenerator
     {
-        public Mapper2<TSource, TDestination> Generate<TSource, TDestination>()
+        public Mapper<TSource, TDestination> Generate<TSource, TDestination>()
         {
             var sourceParam = Expression.Parameter(typeof(TSource));
             var mapFunction =
@@ -100,7 +71,7 @@ namespace Mapper
                     sourceParam
                 );
 
-            return new Mapper2<TSource, TDestination>(mapFunction.Compile());
+            return new Mapper<TSource, TDestination>(mapFunction.Compile());
         }
     }
 }

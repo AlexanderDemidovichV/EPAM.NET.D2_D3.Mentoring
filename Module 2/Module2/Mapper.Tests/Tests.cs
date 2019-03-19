@@ -25,43 +25,14 @@ namespace Mapper.Tests
             public int Stock { get; set; }
         }
 
-
-        [Test]
-        public void TestMethod1()
-        {
-            //var config = new MapperConfiguration(cfg => {
-
-            //    cfg.CreateMap<Foo, Bar>().ForMember(destination => destination.ContactDetails,
-
-            //        opts => opts.MapFrom(source => source.Contact));
-
-            //});
-
-            //var mapGenerator = new MappingGenerator();
-            //var mapper = mapGenerator.Generate<Foo, Bar>();
-            //mapper.ForMember(src => src.Contact, dest => dest.ContactDetails);
-
-            //mapper.ForMember(src => src.Budget, dest => dest.Stock);
-
-            //var foo = new Foo
-            //{
-            //    Contact = "Prop1",
-            //    Budget = 42
-            //};
-            //var bar = mapper.Map(foo);
-
-
-        }
-
      
 
         [Test]
-        public void Test3()
+        public void Test()
         {
             var mapGenerator = new MappingGenerator();
             var mapper = mapGenerator.Generate<Foo2, Bar2>();
-            mapper.AddMapping(src => src.Prop1, dest => dest.Prop1);
-            mapper.AddMapping(src => src.Prop2, dest => dest.Prop2);
+            mapper.ForMember(src => src.Prop1, dest => dest.Prop1);
             var foo = new Foo2
             {
                 Prop1 = "Prop1",
