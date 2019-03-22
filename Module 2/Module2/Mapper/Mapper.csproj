@@ -41,8 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helper.cs" />
-    <Compile Include="Interfaces\IMemberConfigurationExpression.cs" />
+    <Compile Include="MemberConfigurationExpression.cs" />
+    <Compile Include="Interfaces\IMapper.cs" />
     <Compile Include="Mapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
