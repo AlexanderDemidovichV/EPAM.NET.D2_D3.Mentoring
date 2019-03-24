@@ -46,7 +46,7 @@ namespace Mapper
                 }
                 var destPropInfo = destination.GetType().
                     GetProperty(destPropertyName ?? 
-                    throw new MemberConfigurationExpression());
+                    throw new MemberConfigurationException());
                 if (destPropInfo != null)
                     destPropInfo.SetValue(destination, srcValue);
             }

@@ -11,48 +11,19 @@ namespace InterpolationToConcatenation.InterpolationReplacer
         private const string FormatMethodName = "Format";
         private const string ConcatMethodName = "Concat";
 
-        private readonly List<PatternMachingStructure> _patternMatchingList;
-
-        private IEnumerable<MethodInfo> FormatMethods =>
-            typeof(string).GetMethods().Where(x => x.Name.Contains(FormatMethodName));
-
-        private IEnumerable<MethodInfo> FormatMethodWithArrayParameter => FormatMethods.
-            Where(methodInfo => methodInfo.GetParameters().
-            Any(parameterInfo => parameterInfo.ParameterType == typeof(object[])));
-
-        private IEnumerable<MethodInfo> FormatMethodsWithObjects =>
-            FormatMethods.Except(FormatMethodWithArrayParameter);
-
+        private readonly IEnumerable<MethodInfo> _formatMethods;
+        private readonly IEnumerable<MethodInfo> _formatMethodWithArrayParameter;
+        
         private readonly Regex _regexPattern = new Regex(@"\{\d\}");
 
         public InterpolationToConcatenationExpressionVisitor()
         {
-            _patternMatchingList = new List<PatternMachingStructure>
-            {
-                new PatternMachingStructure
-                {
-                    FilterPredicate = methodInfo => 
-                        FormatMethodsWithObjects.Contains(methodInfo),
-                    SelectorArgumentsFunc = x => x.Arguments.Skip(1),
-                    ReturnFunc = InterpolationToStringConcat
-                },
-                new PatternMachingStructure
-                {
-                    FilterPredicate = 
-                        methodInfo => FormatMethodWithArrayParameter.Contains(methodInfo),
-                    SelectorArgumentsFunc = methodCallExpression => 
-                        ((NewArrayExpression)methodCallExpression.Arguments.Last()).Expressions,
-                    ReturnFunc = InterpolationToStringConcat
-                },
-                new PatternMachingStructure
-                {
-                    FilterPredicate = 
-                        method => FormatMethods.All(formatMethod => formatMethod != method),
-                    SelectorArgumentsFunc = 
-                        methodCallExpression => methodCallExpression.Arguments,
-                    ReturnFunc = (node, _) => base.VisitMethodCall(node)
-                }
-            };
+            _formatMethods = typeof(string).GetMethods().
+                Where(x => x.Name.Contains(FormatMethodName));
+
+            _formatMethodWithArrayParameter = _formatMethods.Where(methodInfo =>
+                methodInfo.GetParameters().
+                Any(parameterInfo => parameterInfo.ParameterType == typeof(object[])));
         }
 
         private Expression InterpolationToStringConcat(MethodCallExpression node,
@@ -70,10 +41,40 @@ namespace InterpolationToConcatenation.InterpolationReplacer
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            var pattern = _patternMatchingList.First(x => x.FilterPredicate(node.Method));
-            var arguments = pattern.SelectorArgumentsFunc(node);
-            var expression = pattern.ReturnFunc(node, arguments);
-            return expression;
+            if (IsFormatMethodWithObjectsParams(node.Method))
+            {
+                var arguments = node.Arguments.Skip(1);
+                var expression = InterpolationToStringConcat(node, arguments);
+                return expression;
+            }
+            if (IsFormatMethodWithArrayParam(node.Method))
+            {
+                var arguments = ((NewArrayExpression)node.Arguments.Last()).Expressions;
+                var expression = InterpolationToStringConcat(node, arguments);
+                return expression;
+            }
+            if (IsNotFormatMethod(node.Method))
+            {
+                return base.VisitMethodCall(node);
+            }
+            throw new InterpolationToConcatenationException();
+        }
+
+        private bool IsFormatMethodWithObjectsParams(MethodInfo method)
+        {
+            var formatMethodsWithObjects =
+                _formatMethods.Except(_formatMethodWithArrayParameter);
+            return formatMethodsWithObjects.Contains(method);
+        }
+
+        private bool IsFormatMethodWithArrayParam(MethodInfo method)
+        {
+            return _formatMethodWithArrayParameter.Contains(method);
+        }
+
+        private bool IsNotFormatMethod(MethodInfo method)
+        {
+            return _formatMethods.All(formatMethod => formatMethod != method);
         }
     }
 }
