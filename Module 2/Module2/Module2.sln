@@ -7,9 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapper", "Mapper\Mapper.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapper.Tests", "Mapper.Tests\Mapper.Tests.csproj", "{D87CAAC5-19D2-43C1-93E8-23AE70A022BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpolationToConcatenation", "InterpolationToConcatenation\InterpolationToConcatenation.csproj", "{9EA87CAF-1725-4B31-8F13-EE4248B99F69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InterpolationToConcatenation", "InterpolationToConcatenation\InterpolationToConcatenation.csproj", "{9EA87CAF-1725-4B31-8F13-EE4248B99F69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpolationToConcatenation.Tests", "InterpolationToConcatenation.Tests\InterpolationToConcatenation.Tests.csproj", "{B38F6F69-4899-416C-8F74-5C05EB47D51B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InterpolationToConcatenation.Tests", "InterpolationToConcatenation.Tests\InterpolationToConcatenation.Tests.csproj", "{B38F6F69-4899-416C-8F74-5C05EB47D51B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConditionalValidation", "ConditionalValidation\ConditionalValidation.csproj", "{317403FD-E839-4BE9-8D87-433AAB01D259}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApp", "WebApp\WebApp.csproj", "{1229307C-C0F3-4CD9-8631-83E945BF1644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{B38F6F69-4899-416C-8F74-5C05EB47D51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B38F6F69-4899-416C-8F74-5C05EB47D51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B38F6F69-4899-416C-8F74-5C05EB47D51B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{317403FD-E839-4BE9-8D87-433AAB01D259}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{317403FD-E839-4BE9-8D87-433AAB01D259}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{317403FD-E839-4BE9-8D87-433AAB01D259}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{317403FD-E839-4BE9-8D87-433AAB01D259}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1229307C-C0F3-4CD9-8631-83E945BF1644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1229307C-C0F3-4CD9-8631-83E945BF1644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1229307C-C0F3-4CD9-8631-83E945BF1644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1229307C-C0F3-4CD9-8631-83E945BF1644}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
