@@ -15,17 +15,22 @@ namespace Unmanaged
         private static extern uint CallNtPowerInformation(
             int informationLevel,
             IntPtr lpInputBuffer,
-            uint nInputBufferSize,
+            int nInputBufferSize,
             IntPtr lpOutputBuffer,
-            uint nOutputBufferSize);
+            int nOutputBufferSize);
 
-        public static TOutput GetNtPowerInformationLastSleepTime<TOutput>()
+        public static TOutput GetNtPowerInformationValue<TOutput>(
+            PowerInformationLevel informationLevel)
         {
-            IntPtr outputBuffer = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(TOutput)));
+            IntPtr outputBuffer = 
+                Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(TOutput)));
 
             var returnValue = CallNtPowerInformation(
-                (int)PowerInformationLevel.LastSleepTime, IntPtr.Zero, 0, 
-                outputBuffer, (uint)Marshal.SizeOf(typeof(TOutput)) * 2);
+                (int)informationLevel, 
+                IntPtr.Zero, 
+                0, 
+                outputBuffer,
+                Marshal.SizeOf(typeof(TOutput)));
 
             if (returnValue != (uint)NtStatus.Success)
             {
@@ -34,6 +39,23 @@ namespace Unmanaged
             }
 
             return Marshal.PtrToStructure<TOutput>(outputBuffer);
+        }
+
+        public static void GetNtPowerInformationValue<TInput>
+            (PowerInformationLevel informationLevel, IntPtr inPtr)
+        {
+            var returnValue = CallNtPowerInformation(
+                (int)informationLevel,
+                inPtr,
+                Marshal.SizeOf(typeof(TInput)),
+                IntPtr.Zero,
+                0
+            );
+            if (returnValue != (uint)NtStatus.Success)
+            {
+                throw new Win32Exception(
+                    $"{(NtStatus)Enum.Parse(typeof(NtStatus), returnValue.ToString())}");
+            }
         }
     }
 

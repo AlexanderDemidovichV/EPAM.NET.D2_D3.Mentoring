@@ -44,7 +44,10 @@
     <Compile Include="CallNtPowerInformationWrapper.cs" />
     <Compile Include="Infastructure\NtStatus.cs" />
     <Compile Include="Infastructure\PowerInformationLevel.cs" />
+    <Compile Include="Infastructure\SystemBatteryState.cs" />
+    <Compile Include="Infastructure\SystemPowerInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SetSuspendStateWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

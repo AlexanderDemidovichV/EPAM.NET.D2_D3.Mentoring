@@ -48,23 +48,23 @@ namespace Unmanaged.Tests
         [Test]
         public void GetNtPowerInformation_GetSystemReserveHiberFile_DoesNotThrow()
         {
-            IntPtr outputBuffer =
+            IntPtr input =
                 Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(bool)));
 
-            Marshal.WriteByte(outputBuffer, 1);
+            Marshal.WriteByte(input, 1);
             //Trying to reserve hibernation file...
             Assert.DoesNotThrow(() => CallNtPowerInformationWrapper.
                 GetNtPowerInformationValue<bool>(PowerInformationLevel
-                    .SystemReserveHiberFile, outputBuffer));
+                    .SystemReserveHiberFile, input));
 
-            outputBuffer =
+            input =
                 Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(bool)));
 
-            Marshal.WriteByte(outputBuffer, 0);
+            Marshal.WriteByte(input, 0);
             //Trying to remove hibernation file...
             Assert.DoesNotThrow(() => CallNtPowerInformationWrapper.
                 GetNtPowerInformationValue<bool>(PowerInformationLevel
-                    .SystemReserveHiberFile, outputBuffer));
+                    .SystemReserveHiberFile, input));
         }
 
         [Test]
