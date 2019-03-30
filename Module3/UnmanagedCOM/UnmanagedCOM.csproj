@@ -44,6 +44,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnmanagedManager.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Unmanaged\Unmanaged.csproj">
+      <Project>{7677d717-ac2b-4f46-86cf-de7fcd11adff}</Project>
+      <Name>Unmanaged</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
