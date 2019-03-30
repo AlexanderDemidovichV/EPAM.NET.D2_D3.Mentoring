@@ -1,21 +1,14 @@
-using FluentValidation.TestHelper;
+using ConditionalValidation;
 using NUnit.Framework;
-using WebApp.Infastructure;
-using WebApp.Models;
 
 namespace Tests
 {
     public class Tests
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
-        public void Name_HasErrorWhenNull()
+        public void CustomValidator_PasswordNotEqualConfirmPassword_ModelIsNotValid()
         {
-            var model = new RegisterModel
+            var model = new RegisterModel2
             {
                 UserName = "petya",
                 Age = 19,
@@ -23,22 +16,46 @@ namespace Tests
                 ConfirmPassword = "privet"
             };
 
-            var validationResult = new OriginValidator().Validate(model);
+            var validationResult = new CustomValidator2().Validate(model);
 
-            //new OriginValidator().s(t => t.Password, "zdarova");
-            //new OriginValidator().ShouldHaveValidationErrorFor(t => t.ConfirmPassword, "privet");
+            Assert.IsFalse(validationResult.IsValid);
         }
 
-        //[Test]
-        //public void Name_DoesNotHaveErrorWhenValid()
-        //{
-        //    new OriginValidator().ShouldNotHaveValidationErrorFor(t => t.Name, "Table 1");
-        //}
+        [Test]
+        public void CustomValidator_PasswordEqualConfirmPassword_ModelIsValid()
+        {
+            var model = new RegisterModel2
+            {
+                UserName = "ttttttt",
+                Age = 55,
+                Password = "zdarova",
+                ConfirmPassword = "zdarova"
+            };
 
-        //[Test]
-        //public void Name_HasErrorWhenTooLong()
-        //{
-        //    new OriginValidator().ShouldHaveValidationErrorFor(t => t.Name, new string('a', 51));
-        //}
+            var validationResult = new CustomValidator2().Validate(model);
+
+            Assert.IsTrue(validationResult.IsValid); 
+        }
+
+        public class CustomValidator2 : AbstractValidator<RegisterModel2>
+        {
+            public CustomValidator2()
+            {
+                AddRule("Password", model => model.Password == model.ConfirmPassword);
+            }
+        }
+
+        public class RegisterModel2
+        {
+            public string UserName { get; set; }
+
+            public string Email { get; set; }
+
+            public int Age { get; set; }
+
+            public string Password { get; set; }
+
+            public string ConfirmPassword { get; set; }
+        }
     }
 }

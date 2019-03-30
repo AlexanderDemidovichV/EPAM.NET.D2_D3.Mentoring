@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using WebApp.Infastructure;
 using WebApp.Models;
 
 namespace WebApp.Controllers
@@ -31,8 +33,23 @@ namespace WebApp.Controllers
             return View();
         }
 
-        public JsonResult SignIn(RegisterModel registerModel)
+        public IActionResult SignIn(RegisterModel registerModel)
         {
+            var customValidator = new RegisterModelValidator().Validate(registerModel);
+
+            if (!customValidator.IsValid)
+            {
+                foreach (var error in customValidator.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+            }
+
+            if (!ModelState.IsValid)
+            { 
+                return new BadRequestResult();
+            }
+
             return new JsonResult(registerModel);
         }
     }
