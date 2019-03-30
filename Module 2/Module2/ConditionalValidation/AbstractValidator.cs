@@ -9,7 +9,7 @@ namespace ConditionalValidation
 {
     public abstract class AbstractValidator<T> : IRuleBuilder<T>
     {
-        internal List<IValidationRule<T>> Rules { get; } = 
+        public List<IValidationRule<T>> Rules { get; } = 
             new List<IValidationRule<T>>();
 
         public IRuleBuilder<T> AddRule(string propertyName, Expression<Func<T, bool>> expression)

@@ -9,7 +9,7 @@ namespace ConditionalValidation
 {
     public class JavascriptExpressionVisitor : ExpressionVisitor
     {
-        private StringBuilder _buf;
+        public StringBuilder _buf = new StringBuilder();
 
         public string Translate(Expression expression)
         {

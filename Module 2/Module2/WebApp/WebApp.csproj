@@ -18,4 +18,9 @@
     <Folder Include="Validators\" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConditionalValidation\ConditionalValidation.csproj" />
+  </ItemGroup>
+
 </Project>

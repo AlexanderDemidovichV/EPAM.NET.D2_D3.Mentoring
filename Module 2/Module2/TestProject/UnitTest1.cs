@@ -1,4 +1,7 @@
+using System;
+using System.Linq.Expressions;
 using ConditionalValidation;
+using Lambda2Js;
 using NUnit.Framework;
 
 namespace Tests
@@ -35,6 +38,17 @@ namespace Tests
             var validationResult = new CustomValidator2().Validate(model);
 
             Assert.IsTrue(validationResult.IsValid); 
+        }
+
+        [Test]
+        public void CustomValidator_ConvertToJs()
+        {
+            Expression<Func<RegisterModel2, bool>> expression = model => model.Password == model.ConfirmPassword;
+
+            var js = expression.CompileToJavascript();
+            var visitor = new JavascriptExpressionVisitor();
+
+            visitor.Visit(expression);
         }
 
         public class CustomValidator2 : AbstractValidator<RegisterModel2>
