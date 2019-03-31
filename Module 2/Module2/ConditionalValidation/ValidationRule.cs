@@ -25,7 +25,8 @@ namespace ConditionalValidation
             var validationFailures = new List<ValidationFailure>();
             if (!condition)
             {
-                validationFailures.Add(new ValidationFailure(PropertyName, "error message"));
+                validationFailures.Add(
+                    new ValidationFailure(PropertyName, "error message"));
             }
 
             return validationFailures;

@@ -9,8 +9,14 @@ namespace ConditionalValidation
 {
     public abstract class AbstractValidator<T> : IRuleBuilder<T>
     {
-        public List<IValidationRule<T>> Rules { get; } = 
+        private List<IValidationRule<T>> Rules { get; } = 
             new List<IValidationRule<T>>();
+
+        public Expression ConvertAllRulesToExpression()
+        {
+            var exprs = Rules.Select(rule => rule.Condition);
+            return exprs.Aggregate((expr1, expr2) => expr1.And(expr2));
+        }
 
         public IRuleBuilder<T> AddRule(string propertyName, Expression<Func<T, bool>> expression)
         {
@@ -31,7 +37,8 @@ namespace ConditionalValidation
         public virtual ValidationResult Validate(ValidationContext<T> context)
         {
             context.Guard("Cannot pass null to Validate.", nameof(context));
-            context.InstanceToValidate.Guard("Cannot pass null model to Validate.", nameof(context.InstanceToValidate));
+            context.InstanceToValidate.Guard("Cannot pass null model to Validate.", 
+                nameof(context.InstanceToValidate));
             
             var result = new ValidationResult();
 

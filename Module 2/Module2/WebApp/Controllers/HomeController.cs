@@ -33,9 +33,8 @@ namespace WebApp.Controllers
         public IActionResult Register()
         {
             var visitor = new JavascriptExpressionVisitor();
-            visitor.Visit(new RegisterModelValidator().Rules.First().Condition);
-            var js = visitor._buf.ToString();
-            ViewBag.Condition = "model.Password === model.ConfirmPassword";
+            ViewBag.Condition = visitor.
+                Translate(new RegisterModelValidator().ConvertAllRulesToExpression());
             return View();
         }
 
@@ -56,7 +55,7 @@ namespace WebApp.Controllers
                 return new BadRequestResult();
             }
 
-            return new JsonResult(registerModel);
+            return Redirect("Register");
         }
     }
 }

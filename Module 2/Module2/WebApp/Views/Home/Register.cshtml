@@ -10,16 +10,18 @@
     <label asp-for="UserName"></label><br />
     <input asp-for="UserName" /><br />
     <label asp-for="Email"></label><br />
-    <input asp-for="Email" /><br />
+    <input asp-for="Email" type="email" /><br />
+    <label asp-for="Age"></label><br />
+    <input asp-for="Age" /><br />
     <label asp-for="Password"></label><br />
-    <input asp-for="Password" /><br />
+    <input asp-for="Password" type="password" /><br />
     <label asp-for="ConfirmPassword"></label><br />
-    <input asp-for="ConfirmPassword" /><br />
+    <input asp-for="ConfirmPassword" type="password" /><br />
     <button type="submit">Post</button>
 </form>
 
 <script>
-    function makeMagic(form) {
+    function convertFormDataToModel(form) {
 
         var o = {};
         var a = form.serializeArray();
@@ -36,13 +38,12 @@
         return o;
     }
     function validate() {
-        var model = makeMagic($("#RegisterForm"));
-        if (!(@ViewBag.Condition)) {
+        var model = convertFormDataToModel($("#RegisterForm"));
+        if (!(@Html.Raw(ViewBag.Condition))) {
             alert("Model isn't valid.");
         }
-        return @ViewBag.Condition;  
+        return @Html.Raw(ViewBag.Condition);
     };
-
     //# sourceURL=myscript.js
 </script>
 

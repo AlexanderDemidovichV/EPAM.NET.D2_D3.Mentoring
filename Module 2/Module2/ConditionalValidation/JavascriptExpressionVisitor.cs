@@ -9,7 +9,7 @@ namespace ConditionalValidation
 {
     public class JavascriptExpressionVisitor : ExpressionVisitor
     {
-        public StringBuilder _buf = new StringBuilder();
+        private StringBuilder _buf = new StringBuilder();
 
         public string Translate(Expression expression)
         {
@@ -27,34 +27,8 @@ namespace ConditionalValidation
 
         private string ConvertMemberExpression(MemberExpression memberExpression)
         {
-            if (memberExpression.Expression == null)
-            {
-                // only support DateTime
-                if (memberExpression.Member.DeclaringType != typeof(DateTime)
-                    && memberExpression.Member.MemberType != MemberTypes.Property
-                    )
-                {
-                    throw new ArgumentException();
-                }
-                var value = GetDatePropertyValue(memberExpression);
-                var serialisedValue = SerializeDate(value);
-                return serialisedValue;
-            }
             var propertyName = memberExpression.Member.Name;
-            return $"gv('*.{propertyName}')";
-        }
-
-        private DateTime GetDatePropertyValue(MemberExpression memberExpression)
-        {
-            var propertyInfo = (PropertyInfo)memberExpression.Member;
-            var value = (DateTime)propertyInfo.GetValue(null, null);
-            return value;
-        }
-
-
-        private string SerializeDate(DateTime value)
-        {
-            return $"new Date({value.Year},{value.Month - 1},{value.Day},{value.Hour},{value.Minute},{value.Second})";
+            return $"model.{propertyName}";
         }
 
         protected override Expression VisitUnary(UnaryExpression node)
@@ -68,7 +42,7 @@ namespace ConditionalValidation
 
         protected override Expression VisitBinary(BinaryExpression node)
         {
-            string operatorString = null;
+            string operatorString;
             switch (node.NodeType)
             {
                 case ExpressionType.AndAlso:
@@ -101,6 +75,15 @@ namespace ConditionalValidation
                 case ExpressionType.NotEqual:
                     operatorString = "!=";
                     break;
+                case ExpressionType.Add:
+                    operatorString = "+";
+                    break;
+                case ExpressionType.Multiply:
+                    operatorString = "*";
+                    break;
+                case ExpressionType.Divide:
+                    operatorString = "/";
+                    break;
                 default:
                     throw new NotSupportedException();
             }
@@ -116,45 +99,14 @@ namespace ConditionalValidation
         protected override Expression VisitConstant(ConstantExpression node)
         {
             var value = node.Value;
-            if (value is DateTime time)
-                _buf.Append(SerializeDate(time));
-            else
-                _buf.Append(JsonConvert.SerializeObject(value));
+            _buf.Append(JsonConvert.SerializeObject(value));
 
             return base.VisitConstant(node);
         }
 
         protected override Expression VisitNew(NewExpression node)
         {
-            if (node.Constructor.DeclaringType != typeof(DateTime)) 
-                throw new NotSupportedException();
-
-            var args = GetConstArgumentValues(node.Arguments);
-            var dateTime = (DateTime)node.Constructor.Invoke(args);
-            _buf.Append(SerializeDate(dateTime));
-            return node;
-        }
-
-        private object[] GetConstArgumentValues(
-            IReadOnlyList<Expression> argumentExpressions)
-        {
-            var args = new object[argumentExpressions.Count];
-            for (var i = 0; i < argumentExpressions.Count; i++)
-            {
-                var expression = argumentExpressions[i];
-                args[i] = GetConstArgumentValue(expression);
-            }
-            return args;
-        }
-
-        private object GetConstArgumentValue(Expression expression)
-        {
-            if (expression.NodeType != ExpressionType.Constant)
-            {
-                throw new ArgumentException("expression must be a constant expression");
-            }
-            var constantExpression = (ConstantExpression)expression;
-            return constantExpression.Value;
+            throw new NotSupportedException();
         }
     }
 }
