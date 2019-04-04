@@ -8,8 +8,8 @@ namespace InterpolationToConcatenation.InterpolationReplacer
 {
     public class InterpolationToConcatenationExpressionVisitor : ExpressionVisitor
     {
-        private const string FormatMethodName = "Format";
-        private const string ConcatMethodName = "Concat";
+        private const string FormatMethodName = "FormatMethodName";
+        private const string ConcatMethodName = "ConcatMethodName";
 
         private readonly IEnumerable<MethodInfo> _formatMethods;
         private readonly IEnumerable<MethodInfo> _formatMethodWithArrayParameter;
