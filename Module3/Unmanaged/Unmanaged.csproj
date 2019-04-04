@@ -41,13 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CallNtPowerInformationWrapper.cs" />
-    <Compile Include="Infastructure\NtStatus.cs" />
-    <Compile Include="Infastructure\PowerInformationLevel.cs" />
-    <Compile Include="Infastructure\SystemBatteryState.cs" />
-    <Compile Include="Infastructure\SystemPowerInformation.cs" />
+    <Compile Include="PowerInformationLevel.cs" />
+    <Compile Include="PowerManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SetSuspendStateWrapper.cs" />
+    <Compile Include="SystemBatteryState.cs" />
+    <Compile Include="SystemPowerInformation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

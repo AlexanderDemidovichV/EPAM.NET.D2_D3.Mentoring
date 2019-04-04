@@ -41,14 +41,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPowerManagerCom.cs" />
+    <Compile Include="PowerInformationLevel.cs" />
+    <Compile Include="PowerManager.cs" />
+    <Compile Include="PowerManagerCom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnmanagedManager.cs" />
+    <Compile Include="SystemBatteryState.cs" />
+    <Compile Include="SystemPowerInformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Unmanaged\Unmanaged.csproj">
       <Project>{7677d717-ac2b-4f46-86cf-de7fcd11adff}</Project>
       <Name>Unmanaged</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="reg.cmd" />
+    <None Include="test.ps1" />
+    <None Include="unreg.cmd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="test.vbs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

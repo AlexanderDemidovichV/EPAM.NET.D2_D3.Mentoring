@@ -1,4 +1,4 @@
-set pm = CreateObject("UnmanagedCOM.UnmanagedManager")
+set pm = CreateObject("PowerManagementCOM.PowerManagerCom")
 res = pm.GetPowerInfo()
 
 WScript.Echo(res)
