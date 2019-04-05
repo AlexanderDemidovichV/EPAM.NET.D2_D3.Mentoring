@@ -8,13 +8,13 @@ namespace InterpolationToConcatenation.InterpolationReplacer
 {
     public class InterpolationToConcatenationExpressionVisitor : ExpressionVisitor
     {
-        private const string FormatMethodName = "FormatMethodName";
-        private const string ConcatMethodName = "ConcatMethodName";
+        private const string FormatMethodName = "Format";
+        private const string ConcatMethodName = "Concat";
 
         private readonly IEnumerable<MethodInfo> _formatMethods;
         private readonly IEnumerable<MethodInfo> _formatMethodWithArrayParameter;
-        
-        private readonly Regex _regexPattern = new Regex(@"\{\d\}");
+
+        private const string RegexPattern = @"\{\d\}";
 
         public InterpolationToConcatenationExpressionVisitor()
         {
@@ -30,8 +30,8 @@ namespace InterpolationToConcatenation.InterpolationReplacer
             IEnumerable<Expression> formatArguments)
         {
             var formatString = node.Arguments.First();
-            var argumentStrings = _regexPattern.Matches(formatString.ToString()).
-                Select(match => Expression.Constant(match.Value));
+            var argumentStrings = 
+                Regex.Split(formatString.ToString(), RegexPattern).Select(Expression.Constant);
             var merge = argumentStrings.Merge(formatArguments);
             var stringConcatMethod = 
                 typeof(string).GetMethod(ConcatMethodName, new[] { typeof(object), typeof(object) });
