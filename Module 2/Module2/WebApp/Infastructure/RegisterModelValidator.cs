@@ -8,7 +8,7 @@ namespace WebApp.Infastructure
         public RegisterModelValidator()
         {
             AddRule("Password", model => model.Password == model.ConfirmPassword);
-            AddRule("Age", model => model.Age != 42 && model.Age != 22);
+            AddRule("Age", model => model.Age > 50 && model.Age != 22);
         }
     }
 }

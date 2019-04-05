@@ -41,9 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemberConfigurationException.cs" />
+    <Compile Include="BindingHelper.cs" />
     <Compile Include="Interfaces\IMapper.cs" />
+    <Compile Include="Interfaces\IMappingGenerator.cs" />
     <Compile Include="Mapper.cs" />
+    <Compile Include="MappingGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
