@@ -49,7 +49,7 @@ namespace Handler
             queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
         }
 
-        static async Task ProcessMessagesAsync(Message message, CancellationToken token)
+        static async Task ProcessMessagesAsync(Message mess                         age, CancellationToken token)
         {
             var activity = message.ExtractActivity();
 

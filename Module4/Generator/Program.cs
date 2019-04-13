@@ -40,6 +40,7 @@ namespace Generator
                 var guid = Guid.NewGuid();
                 // Create a new message to send to the queue
                 var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+                message.MessageId = "";
                 message.UserProperties.Add("guid", guid.ToString());
 
                 // Write the body of the message to the console
