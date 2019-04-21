@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -12,14 +14,14 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.ServiceBus;
 
-namespace Generator
+namespace GeneratorTopshelfService
 {
-    class Program
+    public class GeneratorService
     {
-        private static readonly TelemetryClient telemetryClient = 
+        private static TelemetryClient telemetryClient =
             new TelemetryClient(new TelemetryConfiguration("7da04e81-63ca-4b0b-9492-a6b2caf0df53"));
 
-        private static IQueueClient queueClient;
+        private IQueueClient queueClient;
 
         private const string ServiceBusConnectionString =
             "Endpoint=sb://dzemidovich-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=41JPYUS11Yx8b71bXdyLpoGsfsWRvNrIrBjkYYeTRS4=";
@@ -29,26 +31,58 @@ namespace Generator
 
         private const string QueueName = "images";
 
-        static async Task Main()
+        private readonly Guid _guid;
+
+        private GeneratorModel _generatorModel;
+
+        private readonly CancellationTokenSource _cancellationTokenSource;
+
+        public GeneratorService(string outDirectory)
+        {
+            _guid = Guid.NewGuid();
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        public void Start()
         {
             queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            
+            telemetryClient = new TelemetryClient(new TelemetryConfiguration("3d240292-a095-4b96-b7f9-23cc49cd21f7"));
+            _generatorModel = Create(new GeneratorModel()
+            {
+                Guid = _guid,
+                Delay = 5
+            });
 
+            StartProcess(_cancellationTokenSource.Token);
+        }
+
+        public void Stop()
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        private async Task StartProcess(CancellationToken cancellationToken)
+        {
             while (true)
             {
+                UpdateGeneratorEntity();
                 var image = ImageToBase64("C:\\Users\\Aliaksandr_Dzemidovi\\Desktop\\36135994_2002047976524612_3088425035963039744_n.jpg");
 
                 await SendMessagesAsync(image);
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Task.Delay(TimeSpan.FromSeconds(_generatorModel.Delay));
+                if (cancellationToken.IsCancellationRequested)
+                    return;
             }
         }
 
-        private static string ImageToBase64(string path)
+        private string ImageToBase64(string path)
         {
             var data = File.ReadAllBytes(path);
             return Convert.ToBase64String(data);
         }
 
-        private static async Task SendMessagesAsync(string messageBody)
+        private async Task SendMessagesAsync(string messageBody)
         {
             var activity = new Activity("Queue");
             using (var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity))
@@ -59,15 +93,9 @@ namespace Generator
                 try
                 {
                     var guid = Guid.NewGuid();
-                    // Create a new message to send to the queue
                     var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-                    //message.MessageId = "";
                     message.UserProperties.Add("guid", guid.ToString());
-
-                    // Write the body of the message to the console
-                    Console.WriteLine($"Sending message: {guid}");
-
-                    // Send the message to the queue
+                    
                     await queueClient.SendAsync(message);
 
                     operation.Telemetry.Success = true;
@@ -75,9 +103,7 @@ namespace Generator
                 catch (Exception exception)
                 {
                     telemetryClient.TrackException(exception);
-                    // Set operation.Telemetry Success and ResponseCode here.
                     operation.Telemetry.Success = false;
-                    Console.WriteLine($"{DateTime.Now} :: Exception: {exception.Message}");
                 }
                 finally
                 {
@@ -87,7 +113,13 @@ namespace Generator
             }
         }
 
-        public static GeneratorModel Find(Guid guid)
+        private void UpdateGeneratorEntity()
+        {
+            var entity = Find(_guid);
+            _generatorModel = entity;
+        }
+
+        public GeneratorModel Find(Guid guid)
         {
             using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
             {
@@ -95,7 +127,7 @@ namespace Generator
                                               "WHERE Guid = @Guid", new { guid }).SingleOrDefault();
             }
         }
-        public static int Update(GeneratorModel generator)
+        public int Update(GeneratorModel generator)
         {
             using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
             {
@@ -105,17 +137,16 @@ namespace Generator
             }
         }
 
-        public static int Create(GeneratorModel generator)
+        private GeneratorModel Create(GeneratorModel generator)
         {
             using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
             {
                 var sqlQuery = "INSERT Generators VALUES(@Guid, @Delay)";
-                var rowsAffected = db.Execute(sqlQuery, generator);
-                return rowsAffected;
+                return db.Query<GeneratorModel>(sqlQuery, generator).SingleOrDefault();
             }
         }
 
-        public static int Remove(Guid guid)
+        public int Remove(Guid guid)
         {
             using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
             {

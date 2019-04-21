@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -19,16 +23,70 @@ namespace Handler
 
         private const string ServiceBusConnectionString = 
             "Endpoint=sb://dzemidovich-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=41JPYUS11Yx8b71bXdyLpoGsfsWRvNrIrBjkYYeTRS4=";
+        private const string SqlServerDatabaseConnectionString =
+            "Server=tcp:dzemidovich-sql-server-dev.database.windows.net,1433;Initial Catalog=epam-mentoring;Persist Security Info=False;User ID=Gendalf;Password=AzureMentoringEpam2018;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         private const string QueueName = "images";
 
         static async Task Main()
         {
             queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
-            telemetryClient = new TelemetryClient(new TelemetryConfiguration("7da04e81-63ca-4b0b-9492-a6b2caf0df53"));
+            telemetryClient = new TelemetryClient(new TelemetryConfiguration("3d240292-a095-4b96-b7f9-23cc49cd21f7"));
 
-            RegisterOnMessageHandlerAndReceiveMessages();
+            //RegisterOnMessageHandlerAndReceiveMessages();
+            var t = Find(new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"));
 
+            var o = Create(new HandlerModel
+            {
+                Guid = new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"),
+                Delay = 30,
+                Status = 1
+            });
+
+            var y = Find(new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"));
+
+            var r = Update(new HandlerModel { Guid = new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"), Delay = 45, Status = 2});
+
+            t = Find(new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"));
+            var h = Remove(new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"));
+            t = Find(new Guid("2924FAFD-757F-438D-AA2A-69B86AEAA315"));
             Console.ReadLine();
+        }
+
+        public static HandlerModel Find(Guid guid)
+        {
+            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
+            {
+                return db.Query<HandlerModel>("Select * From Handlers " +
+                    "WHERE Guid = @Guid", new { guid }).SingleOrDefault();
+            }
+        }
+        public static int Update(HandlerModel handler)
+        {
+            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
+            {
+                var sqlQuery = "UPDATE Handlers SET Delay = @Delay, " +
+                                        " Status = @Status " + "WHERE Guid = @Guid";
+                var rowsAffected = db.Execute(sqlQuery, handler);
+                return rowsAffected;
+            }
+        }
+
+        public static int Create(HandlerModel handler)
+        {
+            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
+            {
+                var sqlQuery = "INSERT Handlers VALUES(@Guid, @Status, @Delay)";
+                var rowsAffected = db.Execute(sqlQuery, handler);
+                return rowsAffected;
+            }
+        }
+
+        public static int Remove(Guid guid)
+        {
+            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
+            {
+                return db.Execute("DELETE FROM Handlers WHERE Guid = @Guid", new { guid });
+            }
         }
 
         static void RegisterOnMessageHandlerAndReceiveMessages()
@@ -49,7 +107,7 @@ namespace Handler
             queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
         }
 
-        static async Task ProcessMessagesAsync(Message mess                         age, CancellationToken token)
+        static async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
             var activity = message.ExtractActivity();
 
@@ -74,7 +132,7 @@ namespace Handler
                     // If queueClient has already been Closed, you may chose to not call CompleteAsync() or AbandonAsync() etc. calls 
                     // to avoid unnecessary exceptions.
 
-                    await Task.Delay(TimeSpan.FromSeconds(40));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
                 }
                 catch (Exception ex)
                 {
@@ -82,10 +140,14 @@ namespace Handler
                     operation.Telemetry.Success = false;
                     throw;
                 }
-
+                finally
+                {
+                    telemetryClient.StopOperation(operation);
+                }
+                operation.Telemetry.Success = true;
                 telemetryClient.TrackTrace("Done");
             }
-            
+            telemetryClient.Flush();
         }
 
         // Use this Handler to look at the exceptions received on the MessagePump

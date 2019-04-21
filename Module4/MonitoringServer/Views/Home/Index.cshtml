@@ -1,0 +1,16 @@
+﻿@model IEnumerable<HandlerViewModel>
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    
+    
+</div>
+<h1 class="display-4">Handlers</h1>
+@foreach (var handler in Model)
+{
+    <p>Handler Id: @handler.Guid</p>
+    <p>Duration: @(double.IsNaN(handler.Duration) ? "--" : handler.Duration.ToString())</p>
+    <p>------------------------------------------</p>
+}
