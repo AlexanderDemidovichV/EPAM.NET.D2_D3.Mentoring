@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GeneratorHelper.cs" />
     <Compile Include="GeneratorModel.cs" />
     <Compile Include="GeneratorService.cs" />
     <Compile Include="Program.cs" />

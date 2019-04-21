@@ -21,10 +21,7 @@ namespace MonitoringServer.Infastructure
             {
                 return response.Content.ReadAsStringAsync().Result;
             }
-            else
-            {
-                return response.ReasonPhrase;
-            }
+            return response.ReasonPhrase;
         }
 
     }

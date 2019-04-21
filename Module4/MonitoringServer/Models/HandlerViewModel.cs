@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace MonitoringServer.Models
+﻿namespace MonitoringServer.Models
 {
-    public class HandlerViewModel
+    public class HandlerViewModel: Entity
     {
-        public string Guid { get; set; }
-        public double Duration { get; set; }
+        public HandlerViewModel()
+        {
+            Type = EntityType.Handler;
+        }
     }
 }

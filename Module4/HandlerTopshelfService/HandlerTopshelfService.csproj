@@ -257,8 +257,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HandlerHelper.cs" />
     <Compile Include="HandlerModel.cs" />
     <Compile Include="HandlerService.cs" />
+    <Compile Include="MutateImageHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

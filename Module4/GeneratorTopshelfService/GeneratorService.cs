@@ -18,28 +18,26 @@ namespace GeneratorTopshelfService
 {
     public class GeneratorService
     {
-        private static TelemetryClient telemetryClient =
-            new TelemetryClient(new TelemetryConfiguration("7da04e81-63ca-4b0b-9492-a6b2caf0df53"));
+        private TelemetryClient _telemetryClient;
 
         private IQueueClient queueClient;
 
         private const string ServiceBusConnectionString =
             "Endpoint=sb://dzemidovich-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=41JPYUS11Yx8b71bXdyLpoGsfsWRvNrIrBjkYYeTRS4=";
-
-        private const string SqlServerDatabaseConnectionString =
-            "Server=tcp:dzemidovich-sql-server-dev.database.windows.net,1433;Initial Catalog=epam-mentoring;Persist Security Info=False;User ID=Gendalf;Password=AzureMentoringEpam2018;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        
+        private const string InstrumentationKey = "3d240292-a095-4b96-b7f9-23cc49cd21f7";
 
         private const string QueueName = "images";
 
         private readonly Guid _guid;
 
-        private GeneratorModel _generatorModel;
+        private static GeneratorModel _generatorModel;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
 
-        private Task processTask;
+        private Task _processTask;
 
-        public GeneratorService(string outDirectory)
+        public GeneratorService(string inDirectory)
         {
             _guid = Guid.NewGuid();
             _cancellationTokenSource = new CancellationTokenSource();
@@ -49,22 +47,24 @@ namespace GeneratorTopshelfService
         {
             queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
             
-            telemetryClient = new TelemetryClient(new TelemetryConfiguration("3d240292-a095-4b96-b7f9-23cc49cd21f7"));
-            _generatorModel = Create(new GeneratorModel()
+            _telemetryClient = new TelemetryClient(
+                new TelemetryConfiguration(InstrumentationKey));
+            _generatorModel = GeneratorHelper.Create(new GeneratorModel
             {
                 Guid = _guid,
-                Delay = 5
+                // Default value
+                Delay = 30 
             });
 
-            processTask = StartProcess(_cancellationTokenSource.Token);
+            _processTask = StartProcess(_cancellationTokenSource.Token);
         }
 
         public void Stop()
         {
             _cancellationTokenSource.Cancel();
-            processTask.Wait();
-            telemetryClient.Flush();
-            Remove(_generatorModel.Guid);
+            _processTask.Wait();
+            _telemetryClient.Flush();
+            GeneratorHelper.Remove(_generatorModel.Guid);
             queueClient.CloseAsync().GetAwaiter().GetResult();
         }
 
@@ -91,7 +91,7 @@ namespace GeneratorTopshelfService
         private async Task SendMessagesAsync(string messageBody)
         {
             var activity = new Activity("Queue");
-            using (var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity))
+            using (var operation = _telemetryClient.StartOperation<DependencyTelemetry>(activity))
             {
                 operation.Telemetry.Type = "Queue";
                 operation.Telemetry.Data = "Enqueue " + QueueName;
@@ -108,56 +108,21 @@ namespace GeneratorTopshelfService
                 }
                 catch (Exception exception)
                 {
-                    telemetryClient.TrackException(exception);
+                    _telemetryClient.TrackException(exception);
                     operation.Telemetry.Success = false;
                 }
                 finally
                 {
-                    telemetryClient.StopOperation(operation);
-                    telemetryClient.Flush();
+                    _telemetryClient.StopOperation(operation);
+                    _telemetryClient.Flush();
                 }
             }
         }
 
         private void UpdateGeneratorEntity()
         {
-            var entity = Find(_guid);
+            var entity = GeneratorHelper.Find(_guid);
             _generatorModel = entity;
-        }
-
-        public GeneratorModel Find(Guid guid)
-        {
-            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
-            {
-                return db.Query<GeneratorModel>("Select * From Generators " +
-                                              "WHERE Guid = @Guid", new { guid }).SingleOrDefault();
-            }
-        }
-        public int Update(GeneratorModel generator)
-        {
-            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
-            {
-                var sqlQuery = "UPDATE Generators SET Delay = @Delay WHERE Guid = @Guid";
-                var rowsAffected = db.Execute(sqlQuery, generator);
-                return rowsAffected;
-            }
-        }
-
-        private GeneratorModel Create(GeneratorModel generator)
-        {
-            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
-            {
-                var sqlQuery = "INSERT Generators VALUES(@Guid, @Delay)";
-                return db.Query<GeneratorModel>(sqlQuery, generator).SingleOrDefault();
-            }
-        }
-
-        public int Remove(Guid guid)
-        {
-            using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))
-            {
-                return db.Execute("DELETE FROM Generators WHERE Guid = @Guid", new { guid });
-            }
         }
     }
 }
