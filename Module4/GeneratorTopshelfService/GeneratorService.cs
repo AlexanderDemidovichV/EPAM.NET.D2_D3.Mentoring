@@ -37,6 +37,8 @@ namespace GeneratorTopshelfService
 
         private readonly CancellationTokenSource _cancellationTokenSource;
 
+        private Task processTask;
+
         public GeneratorService(string outDirectory)
         {
             _guid = Guid.NewGuid();
@@ -54,12 +56,16 @@ namespace GeneratorTopshelfService
                 Delay = 5
             });
 
-            StartProcess(_cancellationTokenSource.Token);
+            processTask = StartProcess(_cancellationTokenSource.Token);
         }
 
         public void Stop()
         {
             _cancellationTokenSource.Cancel();
+            processTask.Wait();
+            telemetryClient.Flush();
+            Remove(_generatorModel.Guid);
+            queueClient.CloseAsync().GetAwaiter().GetResult();
         }
 
         private async Task StartProcess(CancellationToken cancellationToken)
@@ -67,7 +73,7 @@ namespace GeneratorTopshelfService
             while (true)
             {
                 UpdateGeneratorEntity();
-                var image = ImageToBase64("C:\\Users\\Aliaksandr_Dzemidovi\\Desktop\\36135994_2002047976524612_3088425035963039744_n.jpg");
+                var image = ImageToBase64("d:\\36135994_2002047976524612_3088425035963039744_n.jpg");
 
                 await SendMessagesAsync(image);
                 await Task.Delay(TimeSpan.FromSeconds(_generatorModel.Delay));
