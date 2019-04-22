@@ -6,6 +6,12 @@
 {
     <p>Handler Id: @handler.Guid</p>
     <p>Duration: @(double.IsNaN(handler.Duration) ? "--" : handler.Duration.ToString())</p>
+    <form method="POST" action="@Url.Action("ChangeHandlerDelay", "Home")">
+        <label name="delay">Change Delay</label>
+        <input type="text" name="delay" />
+        <input type="hidden" name="guid" value="@handler.Guid"/>
+        <input type="submit" />
+    </form>
     <p>------------------------------------------</p>
 }
 <p>------------------------------------------</p>

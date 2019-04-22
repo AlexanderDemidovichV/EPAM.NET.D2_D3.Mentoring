@@ -20,9 +20,10 @@ namespace MonitoringServer.Controllers
             return View(objects);
         }
 
-        public IActionResult ChangeHandlerDelay(string guid, int newDelay)
+        [HttpPost]
+        public IActionResult ChangeHandlerDelay(int delay, string guid)
         {
-            HandlerHelper.Update(new Guid(guid), newDelay);
+            HandlerHelper.Update(new Guid(guid), delay);
             return RedirectToAction("Index");
         }
 
@@ -36,7 +37,5 @@ namespace MonitoringServer.Controllers
         {
             return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
         }
-
-        
     }
 }

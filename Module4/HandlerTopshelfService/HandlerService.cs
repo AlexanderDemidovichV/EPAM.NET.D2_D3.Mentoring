@@ -86,7 +86,6 @@ namespace HandlerTopshelfService
                 {
                     await Task.Delay(TimeSpan.FromSeconds(_handlerModel.Delay)); 
                     var myUserProperties = message.UserProperties;
-                    Console.WriteLine($"guid={myUserProperties["guid"]}");
                     _mutateImageHelper.MutateEncodedImage(
                         Encoding.UTF8.GetString(message.Body), 
                         $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h_mm_ss_fff}.jpg");

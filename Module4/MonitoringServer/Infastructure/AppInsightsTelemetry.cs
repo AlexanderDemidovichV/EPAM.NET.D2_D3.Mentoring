@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace MonitoringServer.Infastructure
@@ -11,17 +12,14 @@ namespace MonitoringServer.Infastructure
         public static string GetTelemetry(string appid, string apikey,
             string query)
         {
-            HttpClient client = new HttpClient();
+            var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("x-api-key", apikey);
             var req = string.Format(URL, appid, query);
-            HttpResponseMessage response = client.GetAsync(req).Result;
-            if (response.IsSuccessStatusCode)
-            {
-                return response.Content.ReadAsStringAsync().Result;
-            }
-            return response.ReasonPhrase;
+            var response = client.GetAsync(req).Result;
+            return response.IsSuccessStatusCode ? 
+                response.Content.ReadAsStringAsync().Result : response.ReasonPhrase;
         }
 
     }
