@@ -17,7 +17,7 @@ namespace GeneratorTopshelfService
         static void Main(string[] args)
         {
             var currentDir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            var outDir = Path.Combine(currentDir, "out");
+            var inDir = Path.Combine(currentDir, "in");
 
             var logConfig = new LoggingConfiguration();
             var target = new FileTarget
@@ -38,7 +38,7 @@ namespace GeneratorTopshelfService
                     hostConf.Service<GeneratorService>(
                         s =>
                         {
-                            s.ConstructUsing(() => new GeneratorService(outDir));
+                            s.ConstructUsing(() => new GeneratorService(inDir));
                             s.WhenStarted(serv => serv.Start());
                             s.WhenStopped(serv => serv.Stop());
                         }).UseNLog(logFactory);

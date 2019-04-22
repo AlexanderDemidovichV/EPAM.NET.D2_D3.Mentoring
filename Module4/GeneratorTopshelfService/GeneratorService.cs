@@ -37,8 +37,11 @@ namespace GeneratorTopshelfService
 
         private Task _processTask;
 
+        private readonly string _inDirectory;
+
         public GeneratorService(string inDirectory)
         {
+            _inDirectory = inDirectory;
             _guid = Guid.NewGuid();
             _cancellationTokenSource = new CancellationTokenSource();
         }
@@ -73,7 +76,8 @@ namespace GeneratorTopshelfService
             while (true)
             {
                 UpdateGeneratorEntity();
-                var image = ImageToBase64("d:\\36135994_2002047976524612_3088425035963039744_n.jpg");
+                var directory = new DirectoryInfo(_inDirectory);
+                var image = ImageToBase64(directory.GetFiles("*.jpg").First().FullName);
 
                 await SendMessagesAsync(image);
                 await Task.Delay(TimeSpan.FromSeconds(_generatorModel.Delay));
@@ -98,9 +102,8 @@ namespace GeneratorTopshelfService
 
                 try
                 {
-                    var guid = Guid.NewGuid();
                     var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-                    message.UserProperties.Add("guid", guid.ToString());
+                    message.UserProperties.Add("guid", _guid.ToString());
                     
                     await queueClient.SendAsync(message);
 

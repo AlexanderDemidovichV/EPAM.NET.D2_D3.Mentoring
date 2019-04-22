@@ -22,6 +22,7 @@ namespace MonitoringServer.Infastructure
                 return db.Query<HandlerModel>("Select * From Handlers").ToList();
             }
         }
+
         public static int Update(Guid guid, int delay)
         {
             using (IDbConnection db = new SqlConnection(SqlServerDatabaseConnectionString))

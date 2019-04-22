@@ -23,7 +23,7 @@ namespace MonitoringServer.Controllers
         public IActionResult ChangeHandlerDelay(string guid, int newDelay)
         {
             HandlerHelper.Update(new Guid(guid), newDelay);
-            RedirectToAction("Index");
+            return RedirectToAction("Index");
         }
 
         public IActionResult Privacy()

@@ -1,0 +1,1 @@
+.\bin\Debug\HandlerTopshelfService.exe install -instance:001

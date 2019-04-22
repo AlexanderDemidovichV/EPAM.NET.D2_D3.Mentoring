@@ -29,12 +29,15 @@ namespace HandlerTopshelfService
             "Endpoint=sb://dzemidovich-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=41JPYUS11Yx8b71bXdyLpoGsfsWRvNrIrBjkYYeTRS4=";
         private const string QueueName = "images";
 
+        private readonly string _outDirectory;
+
         public HandlerService(string outDirectory)
         {
+            _outDirectory = outDirectory;
             _guid = Guid.NewGuid();
             _mutateImageHelper = new MutateImageHelper();
-            if (!Directory.Exists("D:\\output"))
-                Directory.CreateDirectory("D:\\output");
+            if (!Directory.Exists(outDirectory))
+                Directory.CreateDirectory(outDirectory);
         }
 
         public void Start()
@@ -81,9 +84,12 @@ namespace HandlerTopshelfService
                 _telemetryClient.TrackTrace("Received message");
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_handlerModel.Delay));
+                    await Task.Delay(TimeSpan.FromSeconds(_handlerModel.Delay)); 
+                    var myUserProperties = message.UserProperties;
+                    Console.WriteLine($"guid={myUserProperties["guid"]}");
                     _mutateImageHelper.MutateEncodedImage(
-                        Encoding.UTF8.GetString(message.Body), $"D:\\output\\{Guid.NewGuid()}.jpg");
+                        Encoding.UTF8.GetString(message.Body), 
+                        $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h:mm:ss}.jpg");
 
                     _telemetryClient.Context.Properties["HandlerId"] = _handlerModel.Guid.ToString();
                     await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
