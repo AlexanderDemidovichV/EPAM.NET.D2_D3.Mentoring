@@ -6,6 +6,10 @@
 {
     <p>Handler Id: @handler.Guid</p>
     <p>Duration: @(double.IsNaN(handler.Duration) ? "--" : handler.Duration.ToString())</p>
+     if (handler.Duration >= 30)
+     {
+         <p> Alert: average process time is <span style="color: red; font-size:200%;">@handler.Duration</span>. That's too long.</p>
+     }
     <form method="POST" action="@Url.Action("ChangeHandlerDelay", "Home")">
         <label name="delay">Change Delay</label>
         <input type="text" name="delay" />
@@ -15,9 +19,16 @@
     <p>------------------------------------------</p>
 }
 <p>------------------------------------------</p>
+<h1 class="display-4">Generators</h1>
 @foreach (var generator in Model.Where(m => m.Type == EntityType.Generator))
 {
     <p>Generator Id: @generator.Guid</p>
     <p>Duration: @(double.IsNaN(generator.Duration) ? "--" : generator.Duration.ToString())</p>
+    <form method="POST" action="@Url.Action("ChangeGeneratorDelay", "Home")">
+        <label name="delay">Change Delay</label>
+        <input type="text" name="delay" />
+        <input type="hidden" name="guid" value="@generator.Guid"/>
+        <input type="submit" />
+    </form>
     <p>------------------------------------------</p>
 }

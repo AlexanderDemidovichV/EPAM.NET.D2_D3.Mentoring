@@ -27,6 +27,13 @@ namespace MonitoringServer.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public IActionResult ChangeGeneratorDelay(int delay, string guid)
+        {
+            GeneratorHelper.Update(new Guid(guid), delay);
+            return RedirectToAction("Index");
+        }
+
         public IActionResult Privacy()
         {
             return View();

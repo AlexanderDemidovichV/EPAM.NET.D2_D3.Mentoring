@@ -31,6 +31,8 @@ namespace HandlerTopshelfService
 
         private readonly string _outDirectory;
 
+        private const string InstrumentationKey = "3d240292-a095-4b96-b7f9-23cc49cd21f7";
+
         public HandlerService(string outDirectory)
         {
             _outDirectory = outDirectory;
@@ -44,7 +46,7 @@ namespace HandlerTopshelfService
         {
             _queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
             _telemetryClient = new TelemetryClient(
-                new TelemetryConfiguration("3d240292-a095-4b96-b7f9-23cc49cd21f7"));
+                new TelemetryConfiguration(InstrumentationKey));
             _handlerModel = HandlerHelper.Create(new HandlerModel
             {
                 Guid = _guid,

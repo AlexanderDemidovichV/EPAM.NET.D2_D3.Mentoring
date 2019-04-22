@@ -25,5 +25,15 @@ namespace MonitoringServer.Infastructure
                 Guid = m.Guid.ToString(), 
                 Duration = m.Delay});
         }
+
+        public static int Update(Guid guid, int delay)
+        {
+            using (IDbConnection db = new SqlConnection(HandlerHelper.SqlServerDatabaseConnectionString))
+            {
+                var sqlQuery = "UPDATE Generators SET Delay = @Delay WHERE Guid = @Guid";
+                var rowsAffected = db.Execute(sqlQuery, new HandlerModel { Guid = guid, Delay = delay });
+                return rowsAffected;
+            }
+        }
     }
 }
