@@ -77,7 +77,12 @@ namespace GeneratorTopshelfService
             {
                 UpdateGeneratorEntity();
                 var directory = new DirectoryInfo(_inDirectory);
-                var image = ImageToBase64(directory.GetFiles("*.jpg").First().FullName);
+
+                var random = new Random();
+                var list = directory.GetFiles("*.jpg").ToList();
+                var index = random.Next(list.Count);
+
+                var image = ImageToBase64(list[index].FullName);
 
                 await SendMessagesAsync(image);
                 await Task.Delay(TimeSpan.FromSeconds(_generatorModel.Delay));

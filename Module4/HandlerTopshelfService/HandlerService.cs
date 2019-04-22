@@ -89,7 +89,7 @@ namespace HandlerTopshelfService
                     Console.WriteLine($"guid={myUserProperties["guid"]}");
                     _mutateImageHelper.MutateEncodedImage(
                         Encoding.UTF8.GetString(message.Body), 
-                        $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h:mm:ss}.jpg");
+                        $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h_mm_ss_fff}.jpg");
 
                     _telemetryClient.Context.Properties["HandlerId"] = _handlerModel.Guid.ToString();
                     await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
