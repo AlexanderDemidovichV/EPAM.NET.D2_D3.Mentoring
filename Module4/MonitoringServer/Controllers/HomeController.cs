@@ -17,6 +17,8 @@ namespace MonitoringServer.Controllers
             var objects = handlers.Select(HandlerHelper.GetHandlerViewModel).ToList();
             objects.AddRange(GeneratorHelper.GetGeneratorViewModels(generators));
 
+            var t = new SubscriptionClientHandlers();
+
             return View(objects);
         }
 

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -49,7 +46,7 @@ namespace GeneratorTopshelfService
         public void Start()
         {
             queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
-            
+
             _telemetryClient = new TelemetryClient(
                 new TelemetryConfiguration(InstrumentationKey));
             _generatorModel = GeneratorHelper.Create(new GeneratorModel

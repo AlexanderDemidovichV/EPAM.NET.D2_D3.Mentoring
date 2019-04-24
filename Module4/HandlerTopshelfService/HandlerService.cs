@@ -1,21 +1,28 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Messages;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Diagnostics;
+using Newtonsoft.Json;
 
 namespace HandlerTopshelfService
 {
     public class HandlerService
     {
+        private const string TopicName = "handlerstopic";
+
         private static TelemetryClient _telemetryClient;
+
+        private static ITopicClient _topicClient;
 
         private static IQueueClient _queueClient;
 
@@ -44,6 +51,7 @@ namespace HandlerTopshelfService
 
         public void Start()
         {
+            _topicClient = new TopicClient(ServiceBusConnectionString, TopicName);
             _queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
             _telemetryClient = new TelemetryClient(
                 new TelemetryConfiguration(InstrumentationKey));
@@ -62,6 +70,11 @@ namespace HandlerTopshelfService
             _telemetryClient.Flush();
             HandlerHelper.Remove(_handlerModel.Guid);
             _queueClient.CloseAsync().GetAwaiter().GetResult();
+            SendMessageToTopic(new UpdateHandlerStatusMessage
+            {
+                HandlerGuid = _guid, 
+                Status = UpdateHandlerType.Unregister
+            }).GetAwaiter().GetResult();
         }
 
         private void RegisterOnMessageHandlerAndReceiveMessages()
@@ -73,6 +86,11 @@ namespace HandlerTopshelfService
             };
             
             _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);
+            SendMessageToTopic(new UpdateHandlerStatusMessage
+            {
+                HandlerGuid = _guid,
+                Status = UpdateHandlerType.Register
+            }).GetAwaiter().GetResult();
         }
 
         private async Task ProcessMessagesAsync(Message message, CancellationToken token)
@@ -80,6 +98,12 @@ namespace HandlerTopshelfService
             UpdateHandlerEntity();
             var activity = message.ExtractActivity();
             
+            await SendMessageToTopic(new UpdateHandlerStatusMessage
+            {
+                HandlerGuid = _guid,
+                Status = UpdateHandlerType.Receive
+            });
+
             using (var operation = _telemetryClient.
                 StartOperation<RequestTelemetry>("Process", activity.RootId, activity.ParentId))
             {
@@ -109,6 +133,36 @@ namespace HandlerTopshelfService
                 _telemetryClient.TrackTrace("Done");
             }
             _telemetryClient.Flush();
+        }
+
+        private async Task SendMessageToTopic(UpdateHandlerStatusMessage messageData)
+        {
+            var activity = new Activity("Handler Status");
+            using (var operation = _telemetryClient.StartOperation<DependencyTelemetry>(activity))
+            {
+                operation.Telemetry.Type = "Handler Status";
+
+                try
+                {
+                    var messageBody = JsonConvert.SerializeObject(messageData);
+                    var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+                    message.UserProperties.Add("guid", _guid.ToString());
+
+                    await _topicClient.SendAsync(message);
+
+                    operation.Telemetry.Success = true;
+                }
+                catch (Exception exception)
+                {
+                    _telemetryClient.TrackException(exception);
+                    operation.Telemetry.Success = false;
+                }
+                finally
+                {
+                    _telemetryClient.StopOperation(operation);
+                    _telemetryClient.Flush();
+                }
+            }
         }
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)
