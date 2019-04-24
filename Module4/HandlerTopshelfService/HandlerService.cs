@@ -67,14 +67,15 @@ namespace HandlerTopshelfService
 
         public void Stop()
         {
-            _telemetryClient.Flush();
-            HandlerHelper.Remove(_handlerModel.Guid);
-            _queueClient.CloseAsync().GetAwaiter().GetResult();
             SendMessageToTopic(new UpdateHandlerStatusMessage
             {
-                HandlerGuid = _guid, 
+                HandlerGuid = _guid,
                 Status = UpdateHandlerType.Unregister
             }).GetAwaiter().GetResult();
+            _telemetryClient.Flush();
+            HandlerHelper.Remove(_guid);
+            _queueClient.CloseAsync().GetAwaiter().GetResult();
+            _topicClient.CloseAsync().GetAwaiter().GetResult();
         }
 
         private void RegisterOnMessageHandlerAndReceiveMessages()
