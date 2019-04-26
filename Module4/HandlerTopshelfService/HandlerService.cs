@@ -134,6 +134,12 @@ namespace HandlerTopshelfService
                 _telemetryClient.TrackTrace("Done");
             }
             _telemetryClient.Flush();
+
+            await SendMessageToTopic(new UpdateHandlerStatusMessage
+            {
+                HandlerGuid = _guid,
+                Status = UpdateHandlerType.CompletedMessage
+            });
         }
 
         private async Task SendMessageToTopic(UpdateHandlerStatusMessage messageData)

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Messages;
 using Microsoft.Azure.ServiceBus;
+using MonitoringServer.Models;
 using Newtonsoft.Json;
 
 namespace MonitoringServer.Infastructure
@@ -19,8 +22,13 @@ namespace MonitoringServer.Infastructure
 
         private const string SubscriptionName = "monitorserver";
 
-        public SubscriptionClientHandlers()
+        private const int minimumDelayBetweenHandlersResponses = 60;
+
+        private readonly IDictionary<string, HandlerViewModel> _handlerStatuses;
+
+        public SubscriptionClientHandlers(IDictionary<string, HandlerViewModel> handlerStatuses)
         {
+            _handlerStatuses = handlerStatuses;
             _subscriptionClient = new SubscriptionClient(ServiceBusConnectionString, TopicName, SubscriptionName);
             RegisterOnMessageHandlerAndReceiveMessages();
         }
@@ -45,16 +53,38 @@ namespace MonitoringServer.Infastructure
 
         private async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
-            // Process the message.
-            var content = JsonConvert.DeserializeObject<UpdateHandlerStatusMessage>(Encoding.UTF8.GetString(message.Body));
+            var statusMessage = JsonConvert.DeserializeObject<UpdateHandlerStatusMessage>(Encoding.UTF8.GetString(message.Body));
+            var guid = statusMessage.HandlerGuid.ToString();
+            if (!_handlerStatuses.ContainsKey(guid))
+            {
+                _handlerStatuses.Add(guid, new HandlerViewModel{Guid = guid});
+            }
 
-            // Complete the message so that it is not received again.
-            // This can be done only if the subscriptionClient is created in ReceiveMode.PeekLock mode (which is the default).
+            var handler = _handlerStatuses[guid];
+            if (message.SystemProperties.EnqueuedTimeUtc > handler.LastUpdated)
+            {
+                switch (statusMessage.Status)
+                {
+                    case UpdateHandlerType.Register:
+                        handler.Status = HandlerStatus.Running;
+                        handler.LastUpdated = message.SystemProperties.EnqueuedTimeUtc;
+                        break;
+                    case UpdateHandlerType.Receive:
+                        handler.Status = HandlerStatus.Running;
+                        handler.LastUpdated = message.SystemProperties.EnqueuedTimeUtc;
+                        break;
+                    case UpdateHandlerType.CompletedMessage:
+                        handler.Status = HandlerStatus.Idle;
+                        handler.LastUpdated = message.SystemProperties.EnqueuedTimeUtc;
+                        break;
+                    case UpdateHandlerType.Unregister:
+                        handler.Status = HandlerStatus.Running;
+                        handler.LastUpdated = message.SystemProperties.EnqueuedTimeUtc;
+                        break;
+                }
+            }
+
             await _subscriptionClient.CompleteAsync(message.SystemProperties.LockToken);
-
-            // Note: Use the cancellationToken passed as necessary to determine if the subscriptionClient has already been closed.
-            // If subscriptionClient has already been closed, you can choose to not call CompleteAsync() or AbandonAsync() etc.
-            // to avoid unnecessary exceptions.
         }
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)

@@ -1,19 +1,28 @@
-﻿@model IEnumerable<Entity>
+﻿@model IEnumerable<dynamic>
 
 
 <h1 class="display-4">Handlers</h1>
 @foreach (var handler in Model.Where(m => m.Type == EntityType.Handler))
 {
     <p>Handler Id: @handler.Guid</p>
+    <p>Last Updated: @handler.LastUpdated.ToString("MM/dd/yyyy HH:mm:ss")</p>
+
+    if (handler.Status == HandlerStatus.Running && (DateTime.UtcNow - (DateTime)handler.LastUpdated).TotalSeconds > 60) {
+
+        <p> <span style="color: red; font-size: 200%;">Handler is processing message longer than 60 seconds, maybe he died:(</span>
+        </p>
+    } else {
+        <p>Status: @handler.Status</p>
+    }
     <p>Duration: @(double.IsNaN(handler.Duration) ? "--" : handler.Duration.ToString())</p>
-     if (handler.Duration >= 30)
-     {
-         <p> Alert: average process time is <span style="color: red; font-size:200%;">@handler.Duration</span>. That's too long.</p>
-     }
+    if (handler.Duration >= 30)
+    {
+        <p> Alert: average process time is <span style="color: red; font-size:200%;">@handler.Duration</span>. That's too long.</p>
+    }
     <form method="POST" action="@Url.Action("ChangeHandlerDelay", "Home")">
         <label name="delay">Change Delay</label>
         <input type="text" name="delay" />
-        <input type="hidden" name="guid" value="@handler.Guid"/>
+        <input type="hidden" name="guid" value="@handler.Guid" />
         <input type="submit" />
     </form>
     <p>------------------------------------------</p>
@@ -27,7 +36,7 @@
     <form method="POST" action="@Url.Action("ChangeGeneratorDelay", "Home")">
         <label name="delay">Change Delay</label>
         <input type="text" name="delay" />
-        <input type="hidden" name="guid" value="@generator.Guid"/>
+        <input type="hidden" name="guid" value="@generator.Guid" />
         <input type="submit" />
     </form>
     <p>------------------------------------------</p>

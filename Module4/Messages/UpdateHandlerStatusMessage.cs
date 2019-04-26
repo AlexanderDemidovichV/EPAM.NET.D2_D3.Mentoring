@@ -7,11 +7,4 @@ namespace Messages
         public UpdateHandlerType Status;
         public Guid HandlerGuid;
     }
-
-    public enum UpdateHandlerType
-    {
-        Register,
-        Receive,
-        Unregister
-    }
 }

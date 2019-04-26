@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MonitoringServer.Infastructure;
 
 namespace MonitoringServer
 {
@@ -31,7 +32,7 @@ namespace MonitoringServer
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
+            services.AddHostedService<TimedHostedService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
