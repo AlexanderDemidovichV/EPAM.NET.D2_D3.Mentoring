@@ -21,6 +21,7 @@ namespace MonitoringServer.Controllers
 
             var objects = handlers.Select(HandlerHelper.GetHandlerViewModel).ToList();
             var handlerStatuses = TimedHostedService.HandlerStatuses;
+            if (handlerStatuses.Count != 0)
             foreach (HandlerViewModel handler in objects)
             {
                 var model = handlerStatuses.Single(h => h.Key == handler.Guid).Value;

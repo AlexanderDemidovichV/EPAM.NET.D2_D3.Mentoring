@@ -12,8 +12,7 @@
 
     public enum HandlerStatus
     {
-        Running,
         Idle,
-        FuckedUp
+        Running
     }
 }
