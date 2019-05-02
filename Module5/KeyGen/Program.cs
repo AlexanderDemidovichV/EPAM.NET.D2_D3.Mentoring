@@ -33,7 +33,7 @@ namespace KeyGen
         private static void WriteStuff(string key)
         {
             Console.WriteLine("                     You've just been hacked                    ");
-            Console.WriteLine("          We proudly present you the unique crack!        ");
+            Console.WriteLine("          We proudly present you our unique crack!        ");
             Console.WriteLine("                     Here's your key:");
             Console.WriteLine($"                 {key}");
         }
