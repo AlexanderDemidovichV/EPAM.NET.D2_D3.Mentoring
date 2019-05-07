@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyGenerator", "KeyGenerator\KeyGenerator.csproj", "{DB495CB5-591F-4634-B8D3-C8CCD9CAC65D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decompiled", "Decompiled\Decompiled.csproj", "{3110F6F1-09D8-43C3-B183-AD0EFF4C21E4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyGen", "KeyGen\KeyGen.csproj", "{E8EA7C72-175F-4B86-B861-CC3C9E1AF9C2}"
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DB495CB5-591F-4634-B8D3-C8CCD9CAC65D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB495CB5-591F-4634-B8D3-C8CCD9CAC65D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB495CB5-591F-4634-B8D3-C8CCD9CAC65D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB495CB5-591F-4634-B8D3-C8CCD9CAC65D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3110F6F1-09D8-43C3-B183-AD0EFF4C21E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3110F6F1-09D8-43C3-B183-AD0EFF4C21E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3110F6F1-09D8-43C3-B183-AD0EFF4C21E4}.Release|Any CPU.ActiveCfg = Release|Any CPU

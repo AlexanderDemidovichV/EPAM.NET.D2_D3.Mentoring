@@ -267,8 +267,6 @@
     <Compile Include="MutateImageHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequiresServiceRequestTelemetryAttribute.cs" />
-    <Compile Include="RequiresServiceTelemetryAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
