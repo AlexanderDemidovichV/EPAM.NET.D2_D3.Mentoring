@@ -13,6 +13,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Diagnostics;
 using Newtonsoft.Json;
+using ServiceTelemetry;
 
 namespace HandlerTopshelfService
 {
@@ -25,8 +26,8 @@ namespace HandlerTopshelfService
         private static ITopicClient _topicClient;
 
         private static IQueueClient _queueClient;
-
-        private readonly Guid _guid;
+        
+        public Guid _guid { get; set; }
 
         private HandlerModel _handlerModel;
 
@@ -94,10 +95,10 @@ namespace HandlerTopshelfService
             }).GetAwaiter().GetResult();
         }
 
+        [RequiresServiceRequestTelemetry]
         private async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
             UpdateHandlerEntity();
-            var activity = message.ExtractActivity();
             
             await SendMessageToTopic(new UpdateHandlerStatusMessage
             {
@@ -105,36 +106,14 @@ namespace HandlerTopshelfService
                 Status = UpdateHandlerType.Receive
             });
 
-            using (var operation = _telemetryClient.
-                StartOperation<RequestTelemetry>("Process", activity.RootId, activity.ParentId))
-            {
-                _telemetryClient.TrackTrace("Received message");
-                try
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(_handlerModel.Delay)); 
-                    var myUserProperties = message.UserProperties;
-                    _mutateImageHelper.MutateEncodedImage(
-                        Encoding.UTF8.GetString(message.Body), 
-                        $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h_mm_ss_fff}.jpg");
-
-                    _telemetryClient.Context.Properties["HandlerId"] = _handlerModel.Guid.ToString();
-                    await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
-                }
-                catch (Exception ex)
-                {
-                    _telemetryClient.TrackException(ex);
-                    operation.Telemetry.Success = false;
-                    throw;
-                }
-                finally
-                {
-                    _telemetryClient.StopOperation(operation);
-                }
-                operation.Telemetry.Success = true;
-                _telemetryClient.TrackTrace("Done");
-            }
-            _telemetryClient.Flush();
-
+            await Task.Delay(TimeSpan.FromSeconds(_handlerModel.Delay)); 
+            var myUserProperties = message.UserProperties;
+            _mutateImageHelper.MutateEncodedImage(
+                Encoding.UTF8.GetString(message.Body), 
+                $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h_mm_ss_fff}.jpg");
+            
+            await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
+                
             await SendMessageToTopic(new UpdateHandlerStatusMessage
             {
                 HandlerGuid = _guid,
@@ -142,34 +121,14 @@ namespace HandlerTopshelfService
             });
         }
 
+        [RequiresServiceTelemetry]
         private async Task SendMessageToTopic(UpdateHandlerStatusMessage messageData)
         {
-            var activity = new Activity("Handler Status");
-            using (var operation = _telemetryClient.StartOperation<DependencyTelemetry>(activity))
-            {
-                operation.Telemetry.Type = "Handler Status";
+            var messageBody = JsonConvert.SerializeObject(messageData);
+            var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+            message.UserProperties.Add("guid", _guid.ToString());
 
-                try
-                {
-                    var messageBody = JsonConvert.SerializeObject(messageData);
-                    var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-                    message.UserProperties.Add("guid", _guid.ToString());
-
-                    await _topicClient.SendAsync(message);
-
-                    operation.Telemetry.Success = true;
-                }
-                catch (Exception exception)
-                {
-                    _telemetryClient.TrackException(exception);
-                    operation.Telemetry.Success = false;
-                }
-                finally
-                {
-                    _telemetryClient.StopOperation(operation);
-                    _telemetryClient.Flush();
-                }
-            }
+            await _topicClient.SendAsync(message);
         }
 
         private Task ExceptionReceivedHandler(ExceptionReceivedEventArgs exceptionReceivedEventArgs)

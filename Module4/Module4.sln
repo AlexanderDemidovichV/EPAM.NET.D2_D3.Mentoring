@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneratorTopshelfService", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messages", "Messages\Messages.csproj", "{33CF094A-014F-4BFD-9540-CB6D6CF20BC5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTelemetry", "ServiceTelemetry\ServiceTelemetry.csproj", "{D4F041BF-564C-485D-B350-D1A9A7C8932E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{33CF094A-014F-4BFD-9540-CB6D6CF20BC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33CF094A-014F-4BFD-9540-CB6D6CF20BC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33CF094A-014F-4BFD-9540-CB6D6CF20BC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4F041BF-564C-485D-B350-D1A9A7C8932E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4F041BF-564C-485D-B350-D1A9A7C8932E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4F041BF-564C-485D-B350-D1A9A7C8932E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4F041BF-564C-485D-B350-D1A9A7C8932E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
