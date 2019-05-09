@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Dapper;
 using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.ServiceBus;
+using ServiceTelemetry;
+using ServiceTelemetry.Aspects;
 
 namespace GeneratorTopshelfService
 {
@@ -94,34 +93,13 @@ namespace GeneratorTopshelfService
             return Convert.ToBase64String(data);
         }
 
+        [ServiceEnqueueRequest]
         private async Task SendMessagesAsync(string messageBody)
         {
-            var activity = new Activity("Queue");
-            using (var operation = _telemetryClient.StartOperation<DependencyTelemetry>(activity))
-            {
-                operation.Telemetry.Type = "Queue";
-                operation.Telemetry.Data = "Enqueue " + QueueName;
-
-                try
-                {
-                    var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-                    message.UserProperties.Add("guid", _guid.ToString());
-                    
-                    await queueClient.SendAsync(message);
-
-                    operation.Telemetry.Success = true;
-                }
-                catch (Exception exception)
-                {
-                    _telemetryClient.TrackException(exception);
-                    operation.Telemetry.Success = false;
-                }
-                finally
-                {
-                    _telemetryClient.StopOperation(operation);
-                    _telemetryClient.Flush();
-                }
-            }
+            var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+            message.UserProperties.Add("guid", _guid.ToString());
+            
+            await queueClient.SendAsync(message);
         }
 
         private void UpdateGeneratorEntity()

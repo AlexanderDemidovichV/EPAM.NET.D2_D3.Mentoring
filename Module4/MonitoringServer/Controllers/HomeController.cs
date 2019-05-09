@@ -24,7 +24,7 @@ namespace MonitoringServer.Controllers
             if (handlerStatuses.Count != 0)
             foreach (HandlerViewModel handler in objects)
             {
-                var model = handlerStatuses.Single(h => h.Key == handler.Guid).Value;
+                var model = handlerStatuses.SingleOrDefault(h => h.Key == handler.Guid).Value;
                 handler.Status = model.Status;
                 handler.LastUpdated = model.LastUpdated;
             }

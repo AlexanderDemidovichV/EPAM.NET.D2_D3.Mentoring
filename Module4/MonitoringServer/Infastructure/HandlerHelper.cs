@@ -50,7 +50,7 @@ namespace MonitoringServer.Infastructure
         {
             var result = AppInsightsTelemetry.GetTelemetry
             (AppInsightsAppId, AppInsightsApiKey,
-                $"timespan=PT1H&query=requests%7C%20where%20customDimensions.HandlerId%20%3D%3D%20%22{handler.Guid.ToString()}%22%20%7C%20summarize%20avg(duration)");
+                $"timespan=PT1H&query=requests%7C%20where%20customDimensions.HandlerId%3D%3D'{handler.Guid.ToString()}'%7C%20summarize%20avg(duration)");
 
             var aiResult = JsonConvert.DeserializeObject<RootObject>(result);
 

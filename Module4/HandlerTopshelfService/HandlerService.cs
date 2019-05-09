@@ -14,6 +14,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Diagnostics;
 using Newtonsoft.Json;
 using ServiceTelemetry;
+using ServiceTelemetry.Aspects;
 
 namespace HandlerTopshelfService
 {
@@ -113,7 +114,7 @@ namespace HandlerTopshelfService
                 $"{_outDirectory}\\{myUserProperties["guid"]}_{DateTime.Now:h_mm_ss_fff}.jpg");
             
             await _queueClient.CompleteAsync(message.SystemProperties.LockToken);
-                
+
             await SendMessageToTopic(new UpdateHandlerStatusMessage
             {
                 HandlerGuid = _guid,
